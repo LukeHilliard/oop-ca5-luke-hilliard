@@ -8,14 +8,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
+
+/**
+ * Main author: Haroldas Tamosauskas
+ * Other contributors:
+ *
+ */
 public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
-
-    /**
-     * Main author: Haroldas Tamosauskas
-     * Other contributors: ...
-     *
-     */
 
     @Override
     public List<Employee> getAllEmployees() throws DaoException
@@ -30,19 +31,24 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
 
             connection = this.getConnection();
 
-            String query = "SELECT * FROM EMPLOYEE";
+            String query = "SELECT * FROM Employees";
             preparedStatement = connection.prepareStatement(query);
 
 
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next())
             {
-                int employeeId = resultSet.getInt("EMPLOYEE_ID");
-                int salary = resultSet.getInt("SALARY");
-                String role = resultSet.getString("ROLE");
-                String lastname = resultSet.getString("LAST_NAME");
-                String firstname = resultSet.getString("FIRST_NAME");
-                Employee u = new Employee(employeeId, firstname, lastname, salary, role);
+                int employeeId = resultSet.getInt("id");
+                String firstName = resultSet.getString("first_name");
+                String lastName = resultSet.getString("last_name");
+                String gender = resultSet.getString("gender");
+                Date dob = resultSet.getDate("dob");
+                double salary = resultSet.getInt("salary");
+                String role = resultSet.getString("role");
+                String username = resultSet.getString("username");
+                String password = resultSet.getString("password");
+
+                Employee u = new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
                 EmployeesList.add(u);
             }
         } catch (SQLException e)
@@ -85,20 +91,24 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
         {
             connection = this.getConnection();
 
-            String query = "SELECT * FROM USER WHERE ID = ?";
+            String query = "SELECT * FROM Employees WHERE id = ?";
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, id);
 
             resultSet = preparedStatement.executeQuery();
             if (resultSet.next())
             {
-                int userId = resultSet.getInt("USER_ID");
-                int salary = resultSet.getInt("SALARY");
-                String role = resultSet.getString("ROLE");
-                String lastname = resultSet.getString("LAST_NAME");
-                String firstname = resultSet.getString("FIRST_NAME");
+                int employeeId = resultSet.getInt("id");
+                String firstName = resultSet.getString("first_name");
+                String lastName = resultSet.getString("last_name");
+                String gender = resultSet.getString("gender");
+                Date dob = resultSet.getDate("dob");
+                double salary = resultSet.getInt("salary");
+                String role = resultSet.getString("role");
+                String username = resultSet.getString("username");
+                String password = resultSet.getString("password");
 
-                employee = new Employee(userId, firstname, lastname, salary, role);
+                new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
             }
         } catch (SQLException e)
         {

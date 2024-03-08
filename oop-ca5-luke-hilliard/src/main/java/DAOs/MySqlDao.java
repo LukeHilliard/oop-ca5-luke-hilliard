@@ -5,12 +5,19 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import Exceptions.DaoException;
 
+
+/**
+ * Main author: Haroldas Tamosauskas
+ * Other contributors:
+ *
+ */
+
 public class MySqlDao
 {
     public Connection getConnection() throws DaoException
     {
         String driver = "com.mysql.cj.jdbc.Driver";
-        String url = "jdbc:mysql://localhost:3306/user_database";
+        String url = "jdbc:mysql://localhost:3306/Staff";
         String username = "root";
         String password = "";
         Connection connection = null;
