@@ -1,5 +1,6 @@
 package DTOs;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 /**
@@ -20,8 +21,21 @@ public class Employee {
     private String password;
 
 
+    // With id
     public Employee(int id, String firstName, String lastName, String gender, LocalDate dob, double salary, String role, String username, String password) {
         this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.gender = gender;
+        this.dob = dob;
+        this.salary = salary;
+        this.role = role;
+        this.username = username;
+        this.password = password;
+    }
+
+    // Without id
+    public Employee(String firstName, String lastName, String gender, LocalDate dob, double salary, String role, String username, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.gender = gender;
