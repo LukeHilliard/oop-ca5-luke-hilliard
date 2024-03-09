@@ -5,23 +5,28 @@ import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
 import Exceptions.DaoException;
 
-import javax.swing.text.DateFormatter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Main author: Luke Hilliard
+ * Other contributors: ...
+ *
+ */
+
+/*
+      TODO - 1. change string validation to allow space characters
+      TODO - 2.
+ */
 public class App {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         boolean exit = false;
-        /**
-         * Main author: Luke Hilliard
-         * Other contributors: ...
-         *
-         */
+
         try{
             do{
                 int choice = 0;
@@ -31,19 +36,20 @@ public class App {
                 choice = input.nextInt();
                 switch (choice) {
                     case -1:
+                        System.out.println("\n\nProgram ending...");
                         exit = true;
                         break;
                     case 1:
-                        displayAllEmployees(IEmployeeDao);
+                        getAllEmployees(IEmployeeDao);
                         break;
                     case 2:
                         findEmployeeByID(IEmployeeDao);
                         break;
                     case 3:
-                        // TODO implement delete entity
+                        deleteEmployeeByID(IEmployeeDao);
                         break;
                     case 4:
-                        displayAddEmployee(IEmployeeDao);
+                        addEmployee(IEmployeeDao);
                         break;
                     case 5:
                         // TODO implement update existing by id
@@ -57,35 +63,42 @@ public class App {
         } catch(DaoException e) {
             System.out.println("** Error connecting to the database. **" + e.getMessage());
         }
-
     }
+
+
     /**
      *  Author: Luke Hilliard
-     *
      *  Displays the main menu (Default)
      */
     private static void displayMainMenu() {
-        System.out.println("------* Employee Database ------*");
-        System.out.println("\t.1 Display Entity by ID\n\t.2 Display all Entities\n\t.3 Delete Entity by ID\n\t.4 Add an Entity\n\t.5 Get Images List\n\t.-1 Exit");
+        System.out.println("+-----* Employee Database *-----+");
+        System.out.println("""
+                \t.1 Display all Entities
+                \t.2 Display Entity by ID
+                \t.3 Delete Entity by ID
+                \t.4 Add an Entity
+                \t.5 Get Images List
+
+                \t.-1 Exit""");
     }
 
 
     /**
      *  Author: Haroldas Tamosauskas
      *  Other contributors: Luke Hilliard
-     *
      *  Displays all Employees in the database
+     *
+     * @param dao interface
      */
-    private static void displayAllEmployees(EmployeeDaoInterface dao) throws DaoException {
+    private static void getAllEmployees(EmployeeDaoInterface dao) throws DaoException{
         try {
-            System.out.println("\n\nFinding all the Employees");
-            List<Employee> employees = dao.getAllEmployees();
+            System.out.println("\nFinding all employees...");
+            List<Employee> employeeList = dao.getAllEmployees();
 
-            if (employees.isEmpty())
-                System.out.println("There are no Employees");
+            if (employeeList.isEmpty())
+                System.out.println("There are no Employees\n");
             else {
-                for (Employee employee : employees)
-                    System.out.println("Employee: " + employee.toString());
+                displayAllEmployees(employeeList); // display employees as a table
             }
         } catch(DaoException e) {
             System.out.println("** Error getting employee **" + e.getMessage());
@@ -94,38 +107,27 @@ public class App {
     }
 
 
-    /**  TODO
-     *  Author: Luke Hilliard
-     *
-     *  Display one employee
-     */
-    private static void displayOneEmployee(Employee employee)  {
-        // does not need try catch
-    }
-
-
     /**
-     *  Author: Haroldas Tamosauskas
-     *  Other contributors: Luke Hilliard
+     * Author: Haroldas Tamosauskas
+     * Other contributors: Luke Hilliard
+     * Displays all Employees in the database
      *
-     *  Displays all Employees in the database
+     * @param dao interface
      */
     private static void findEmployeeByID(EmployeeDaoInterface dao) {
         try {
-            Scanner input = new Scanner(System.in);
-            int id = -1; // -1 cannot be a valid index
-            System.out.print("Enter an ID to find: ");
-            id = input.nextInt();
-            System.out.println("\nFinding the Employee with ID -> " + id);
+            int id;
 
+            id = validateIntInput("Enter an ID to find: ");
+
+            System.out.println("Finding employee with id " + id + "...");
             Employee employee = dao.getEmployeeById(id);
 
-            // TODO use displayOneEmployee to display the results better
-            if( employee != null )
-                System.out.println("Employee found: " + employee);
+            if(employee != null)
+                displayOneEmployee(employee);
             else
-                System.out.println("Employee with that ID was not found");
-            }
+                System.out.println("Employee with that ID was not found\n");
+        }
         catch( DaoException e)
         {
             System.out.println("** Error finding employee. **" + e.getMessage());
@@ -134,11 +136,44 @@ public class App {
 
 
     /**
-     *  Author: Luke Hilliard
+     * Author: Katie Lynch
+     * Deleting an Employee from the database
      *
-     *  Displays the menu for adding a new Employee
+     * @param dao interface
      */
-    private static void displayAddEmployee(EmployeeDaoInterface dao) {
+    private static void deleteEmployeeByID(EmployeeDaoInterface dao){
+
+        try{
+            int id;
+            id = validateIntInput("Enter ID of Employee to be deleted (-1 to cancel): ");
+
+            if(id == -1) { // exit method
+                System.out.println("Cancelling...\n");
+                return;
+            }
+
+            //checks that ID entered is above 0 as ID cannot be 0 or anything less
+            if (id <= 0) {
+                System.out.println("The Employee ID you want to delete must be above 0");
+            } else {
+                System.out.println("Deleting Employee with ID: " + id);
+                //checks for employee ID in database and deletes it if it is there
+                dao.deleteEmployee(id);
+            }
+
+        }catch (DaoException ex){
+            System.out.println("** Error deleting employee **" + ex.getMessage());
+        }
+    }
+
+
+    /**
+     * Author: Luke Hilliard
+     * Displays the menu for adding a new Employee
+     *
+     * @param dao interface
+     */
+    private static void addEmployee(EmployeeDaoInterface dao) {
         try {
             Scanner input = new Scanner(System.in);
             String fName, lName, gender, role, username, password;
@@ -164,10 +199,51 @@ public class App {
 
     }
 
+    /**
+     * Author: Luke Hilliard
+     * Takes an Employee object as a parameter and displays it in table form
+     *
+     * @param employee details of this instance of employee
+     */
+    private static void displayOneEmployee(Employee employee)  {
+
+        // Display a single employee in table form
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("| ID |  First Name  |  Last Name   | Gender |    DOB     |   Salary   |      Role               |    Username          | Password       |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+
+            System.out.printf("| %-2d | %-12s | %-12s | %-6s | %10s | $% .2f | %-23s | %-20s | %-14s |%n",
+                    employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+\n");
+
+    }
 
     /**
-     *  Author: Luke Hilliard
+     * Author: Luke Hilliard
+     * Takes a List of employees as a parameter and displays all of them in table form
      *
+     * @param employeeList a list of employees, populated with results from SQL DB
+     */
+    private static void displayAllEmployees(List<Employee> employeeList) {
+        // Display all employee in table form
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("| ID |  First Name  |  Last Name   | Gender |    DOB     |   Salary   |      Role               |    Username          | Password       |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+
+        for(Employee employee : employeeList) {
+            System.out.printf("| %-2d | %-12s | %-12s | %-6s | %10s | $% .2f | %-23s | %-20s | %-14s |%n",
+                    employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
+        }
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("|  Total: "+ employeeList.size() + "                                                                                                    |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+\n");
+    }
+
+
+
+    /////////////////////////// Validation //////////////////////////////
+    /**
+     *  Author: Luke Hilliard
      *  Takes a message as a parameter to display again if invalid input,
      *  loops until input is a string only containing letters.
      *
@@ -196,7 +272,6 @@ public class App {
 
     /**
      *  Author: Luke Hilliard
-     *
      *  Use this method whenever you want to get a date of birth.
      *  Tries to parse user input with date format 'yyyy-MM-dd' catches invalid format,
      *  loops infinitely until return is hit
@@ -225,7 +300,6 @@ public class App {
 
     /**
      * Author: Luke Hilliard
-     *
      * Use this method whenever you want to get the annual salary.
      * Tries to parse user input to double, catches invalid input and tries again.
      * This method could also be user to validate double inputs.
@@ -236,14 +310,40 @@ public class App {
         Scanner input = new Scanner(System.in);
 
         // true so loop can only exit from return
-        while (true) {
+        while(true) {
             try {
                 System.out.print("\tAnnual Salary: ");
                 return Double.parseDouble(input.nextLine()); // if the input cannot be parsed to a double, it is invalid
+
             } catch (NumberFormatException e) {
                 System.out.print("\n** Invalid input. Please enter a valid annual salary. **\n");
             }
         }
     }
 
+
+    /**
+     * Author: Luke Hilliard
+     * Use this method whenever you want to take an integer value. Tries to parse user input to a
+     * Integer, catches invalid input and tries again.
+     *
+     * @param requestMessage e.g. "Enter ID: "
+     * @return validated Integer value
+     */
+    private static Integer validateIntInput(String requestMessage){
+        Scanner input = new Scanner(System.in);
+
+        // true so loop can only exit from return
+        while(true) {
+            try{
+                System.out.print(requestMessage);
+                return Integer.parseInt(input.nextLine()); // if the input cannot be parsed to an integer, it is invalid
+
+            }catch(NumberFormatException e){
+                System.out.println("\n** Invalid input. Please enter a valid employee ID. **\n");
+            } catch(InputMismatchException e) {
+                System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
+            }
+        }
     }
+}

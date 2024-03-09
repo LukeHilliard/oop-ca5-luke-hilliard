@@ -70,6 +70,58 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
         }
     }
 
+    /**
+     * Author: Katie Lynch
+     * Takes in user input for employee ID and deletes corresponding employee
+     * @throws DaoException catch the exception
+     */
+    @Override
+    public void deleteEmployee(int id) throws DaoException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try{
+            connection = this.getConnection();
+            //creates query to delete a row of employee data using the ID parameter passed in
+
+            String query = "DELETE FROM Employees WHERE id = ?";
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+
+            //goes to ID entered and executes the query to delete the row and updates the Employee table to show the record was removed
+            int deletedRows = preparedStatement.executeUpdate();
+            //makes sure the ID entered is above 0 as there won't be a record 0 and checks if the ID entered corresponds with an employee record that exists in the database
+            if(deletedRows > 0){
+                System.out.println("Employee " + id + " was deleted");
+            }else{
+                System.out.println("Employee " + id + " does not exist");
+            }
+
+        }catch (SQLException ex){
+            throw new DaoException("deleteEmployee(): " + ex.getMessage());
+        }finally
+        {
+            try
+            {
+                if (resultSet != null)
+                {
+                    resultSet.close();
+                }
+                if (preparedStatement != null)
+                {
+                    preparedStatement.close();
+                }
+                if (connection != null)
+                {
+                    freeConnection(connection);
+                }
+            } catch (SQLException ex)
+            {
+                throw new DaoException("deleteEmployee() " + ex.getMessage());
+            }
+        }
+    }
+
 
     @Override
     public List<Employee> getAllEmployees() throws DaoException
@@ -161,7 +213,7 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
                 String username = resultSet.getString("username");
                 String password = resultSet.getString("password");
 
-                new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
+                employee = new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
             }
         } catch (SQLException e)
         {
