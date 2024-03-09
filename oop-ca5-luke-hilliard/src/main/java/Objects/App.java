@@ -13,15 +13,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Main author: Luke Hilliard
+ * Other contributors: ...
+ *
+ */
 public class App {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         boolean exit = false;
-        /**
-         * Main author: Luke Hilliard
-         * Other contributors: ...
-         *
-         */
+
         try{
             do{
                 int choice = 0;
@@ -40,7 +41,7 @@ public class App {
                         findEmployeeByID(IEmployeeDao);
                         break;
                     case 3:
-                        // TODO implement delete entity
+                        deleteEmployeeByID(IEmployeeDao);
                         break;
                     case 4:
                         displayAddEmployee(IEmployeeDao);
@@ -65,8 +66,8 @@ public class App {
      *  Displays the main menu (Default)
      */
     private static void displayMainMenu() {
-        System.out.println("------* Employee Database ------*");
-        System.out.println("\t.1 Display Entity by ID\n\t.2 Display all Entities\n\t.3 Delete Entity by ID\n\t.4 Add an Entity\n\t.5 Get Images List\n\t.-1 Exit");
+        System.out.println("+-----* Employee Database *-----+");
+        System.out.println("\t.1 Display all Entities\n\t.2 Display Entity by ID\n\t.3 Delete Entity by ID\n\t.4 Add an Entity\n\t.5 Get Images List\n\n\t.-1 Exit");
     }
 
 
@@ -100,7 +101,16 @@ public class App {
      *  Display one employee
      */
     private static void displayOneEmployee(Employee employee)  {
-        // does not need try catch
+
+        // Display a single employee in table form
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------+----------------+-----------+");
+        System.out.println("| ID |  First Name  |  Last Name   | Gender |    DOB     |   Salary   |      Role         |    Username    | Password  |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------+----------------+-----------+");
+
+            System.out.printf("| %-2d | %-12s | %-12s | %-6s | %10s | $% .2f | %-17s | %-14s | %-9s |%n",
+                    employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------+----------------+-----------+\n");
+
     }
 
 
@@ -121,8 +131,8 @@ public class App {
             Employee employee = dao.getEmployeeById(id);
 
             // TODO use displayOneEmployee to display the results better
-            if( employee != null )
-                System.out.println("Employee found: " + employee);
+            if(employee != null)
+                displayOneEmployee(employee);
             else
                 System.out.println("Employee with that ID was not found");
             }
@@ -132,6 +142,30 @@ public class App {
         }
     }
 
+    /**
+     *  Author: Katie Lynch
+     *
+     *  Deleting an Employee from the database
+     */
+    private static void deleteEmployeeByID(EmployeeDaoInterface dao){
+
+        try{
+            int id;
+            id = validateIntInput("Enter ID of Employee to be deleted: ");
+
+            //checks that ID entered is above 0 as ID cannot be 0 or anything less
+            if (id <= 0) {
+                System.out.println("The Employee ID you want to delete must be above 0");
+            } else {
+                System.out.println("Deleting Employee with ID: " + id);
+                //checks for employee ID in database and deletes it if it is there
+                dao.deleteEmployee(id);
+            }
+
+        }catch (DaoException ex){
+            System.out.println("** Error deleting employee **" + ex.getMessage());
+        }
+    }
 
     /**
      *  Author: Luke Hilliard
@@ -236,14 +270,31 @@ public class App {
         Scanner input = new Scanner(System.in);
 
         // true so loop can only exit from return
-        while (true) {
+        while(true) {
             try {
                 System.out.print("\tAnnual Salary: ");
                 return Double.parseDouble(input.nextLine()); // if the input cannot be parsed to a double, it is invalid
+
             } catch (NumberFormatException e) {
                 System.out.print("\n** Invalid input. Please enter a valid annual salary. **\n");
             }
         }
     }
 
+
+
+    private static Integer validateIntInput(String requestMessage){
+        Scanner input = new Scanner(System.in);
+
+        // true so loop can only exit from return
+        while(true) {
+            try{
+                System.out.println(requestMessage);
+                return Integer.parseInt(input.nextLine()); // if the input cannot be parsed to an integer, it is invalid
+
+            }catch(NumberFormatException e){
+                System.out.println("\n** Invalid input. Please enter a valid employee ID. **\n");
+            }
+        }
     }
+}
