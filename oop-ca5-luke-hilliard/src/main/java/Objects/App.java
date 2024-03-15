@@ -235,7 +235,7 @@ public class App {
                     employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
         }
         System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
-        System.out.println("|  Total: "+ employeeList.size() + "                                                                                                    |");
+        System.out.println("|  Total: "+ employeeList.size() + "                                                                                                                            |");
         System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+\n");
     }
 
