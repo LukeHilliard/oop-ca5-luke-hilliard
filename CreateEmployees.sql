@@ -4,7 +4,7 @@
  * Other contributors: ...
  *
  */
- /*//// with username & password ////*/
+  /* ///// with username & password //// */
 DROP DATABASE IF EXISTS `employees_database`;
 CREATE DATABASE `employees_database`;
 USE `employees_database`;
@@ -35,7 +35,7 @@ VALUES
     (NULL, 'Christopher', 'Martinez', 'Male', '1991-08-07', 63000.00, 'Sales Representative', 'christopher_martinez', 'password9'),
     (NULL, 'Amanda', 'Garcia', 'Female', '1989-06-22', 59000.00, 'Software Developer', 'amanda_garcia', 'password10');
 
-/*//// without username & password ////
+/*//// without username & password //// */
 
 DROP TABLE IF EXISTS Employees;
 CREATE TABLE Employees (
