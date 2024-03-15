@@ -77,7 +77,8 @@ public class App {
                 \t.2 Display Entity by ID
                 \t.3 Delete Entity by ID
                 \t.4 Add an Entity
-                \t.5 Get Images List
+                \t.5 Update an existing Entity by ID
+                \t.6 Get list of entities matching a filter
 
                 \t.-1 Exit""");
     }
@@ -197,6 +198,24 @@ public class App {
             System.out.println("** Error creating new employee. **" + e.getMessage());
         }
 
+    }
+
+
+    private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
+        try {
+            Scanner input = new Scanner(System.in);
+            System.out.println("+-----* Employee Database *-----+");
+            System.out.println("""
+                \t.1 By First Name
+                \t.2 By Date of Birth
+                \t.3 By Salary
+
+                \t.-1 Return""");
+
+
+        } catch(DaoException e) {
+
+        }
     }
 
     /**
@@ -320,7 +339,6 @@ public class App {
             }
         }
     }
-
 
     /**
      * Author: Luke Hilliard

@@ -184,7 +184,6 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
     }
 
 
-
     @Override
     public Employee getEmployeeById(int id) throws DaoException
     {
@@ -240,5 +239,30 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
             }
         }
         return employee;     // reference to User object, or null value
+    }
+
+
+    @Override
+    public List<Employee> getEmployeesMatchingFilter(String filter) {
+        List<Employee> employeesList = new ArrayList<>();
+        switch (filter) {
+            case "fName":
+                // TODO filter by first name
+                break;
+
+            case "dob":
+                // TODO filter by dob
+                break;
+
+            case "salary":
+                // TODO filter by salary
+                break;
+
+            default:
+                System.out.println("*---* Invalid filter selected *---*");
+                break;
+        }
+
+        return employeesList;
     }
 }

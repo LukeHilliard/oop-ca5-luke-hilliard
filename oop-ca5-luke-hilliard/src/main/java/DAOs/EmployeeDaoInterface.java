@@ -9,5 +9,6 @@ public interface EmployeeDaoInterface {
     public Employee getEmployeeById(int id) throws DaoException;
     public void addEmployee(Employee employee) throws DaoException;
     public void deleteEmployee(int id) throws DaoException;
+    public  List<Employee> getEmployeesMatchingFilter(String filter) throws DaoException;
 
 }
