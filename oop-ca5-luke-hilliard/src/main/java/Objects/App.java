@@ -8,6 +8,7 @@ import Exceptions.DaoException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -52,10 +53,10 @@ public class App {
                         addEmployee(IEmployeeDao);
                         break;
                     case 5:
-                        // TODO implement update existing by id
+                        displayUpdateEmployeeByID(IEmployeeDao);
                         break;
                     case 6:
-                        // TODO implement get list matching filters
+                        findEmployeeMatchingFilter(IEmployeeDao);
                         break;
                 }
 
@@ -77,7 +78,8 @@ public class App {
                 \t.2 Display Entity by ID
                 \t.3 Delete Entity by ID
                 \t.4 Add an Entity
-                \t.5 Get Images List
+                \t.5 Update an existing Entity by ID
+                \t.6 Get list of entities matching a filter
 
                 \t.-1 Exit""");
     }
@@ -197,6 +199,211 @@ public class App {
             System.out.println("** Error creating new employee. **" + e.getMessage());
         }
 
+    }
+
+
+    /**
+     *  Author: Katie Lynch
+     *  Displays the menu for updating an existing Employee
+     */
+    private static void displayUpdateEmployeeByID(EmployeeDaoInterface dao){
+        try {
+            displayAllEmployees(dao.getAllEmployees());
+        }catch(DaoException e){
+            System.out.println("----* Error connecting to database *----");
+        }
+
+        try{
+            Scanner kbrd = new Scanner(System.in);
+            int id;
+            String fName, lName, gender, role, username, password, wantToUpdate;
+            double salary;
+            LocalDate dateOfBirth;
+            System.out.println("*---- Update An Employee ----*");
+            System.out.println("\nEnter ID Of Employee You Want To Update:");
+            id = kbrd.nextInt();
+            //checks ID entered is valid
+            if(id <= 0){
+                System.out.println("The Employee ID You Want To Update Must Be Above 0");
+            }else{
+                Employee employee = dao.getEmployeeById(id);
+                //checks employee has data
+                if(employee != null){
+                    System.out.println("Employee To Update: ");
+                    displayOneEmployee(employee);
+                    System.out.println("Enter What You Want To Update:");
+                    wantToUpdate = kbrd.next();
+                    //if the user wants to update a field, that field's data changes but the original data stays
+                    if(wantToUpdate.equalsIgnoreCase("first_name")){
+                        fName = validateStringInput("First Name: ");
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("last_name")){
+                        fName = employee.getFirstName();
+                        lName = validateStringInput("Last Name: ");
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("gender")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = validateStringInput("Gender: ");
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("dob")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = getDateOfBirth();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("salary")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = getAnnualSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("role")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = validateStringInput("Role: ");
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("username")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = validateStringInput("Username: ");
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("password")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = validateStringInput("Password: ");
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else{
+                        System.out.println("This Field Does Not Exist");
+                    }
+                }else{
+                    System.out.println("Employee With That ID Was Not Found");
+                }
+            }
+
+        }catch(DaoException ex){
+            System.out.println("Encountered An Error Updating Employee: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Author: Luke Hilliard
+     * Filter employees by a specified comparator and order.
+     * Filter by: First name            Order by: Ascending
+     *            Date of Birth                   Descending
+     *            Salary
+     *
+     *
+     * @param dao connection
+     */
+    private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
+        List<Employee> filteredEmployeeList = new ArrayList<>();
+
+        // Ask for the type of filter to use
+        System.out.println("+-----* Select Filter *-----+");
+        System.out.println("""
+            \t.1 By First Name
+            \t.2 By Date of Birth
+            \t.3 By Salary
+
+            \t.0 Return""");
+        int filterChoice = validateIntInput(":");
+
+        // validate input further to keep it within range 0 - 3
+        while(filterChoice < 0 || filterChoice > 3 ) {
+            System.out.println("--* Input " + filterChoice + " is out of bounds *--");
+            filterChoice = validateIntInput(":");
+        }
+        // based on user input from the menu options, set a variable to the type of filter they want
+        String filter = "";
+        switch(filterChoice) {
+            case 1:
+                filter = "fName";
+                break;
+            case 2:
+                filter = "dob";
+                break;
+            case 3:
+                filter = "salary";
+                break;
+            case 0:
+                // return to main menu
+                return;
+            default:
+                System.out.println("----* Invalid option, select a corresponding number from the menu. *----");
+        }
+
+        // Ask for the order to display them
+        System.out.println("+-----* Select Order *-----+");
+        System.out.println("""
+            \t.1 Ascending
+            \t.2 Descending
+
+            """);
+        int orderChoice = validateIntInput(":");
+
+        // validate input further to keep it within range 1 - 2
+        while(orderChoice < 1 || orderChoice > 2 ) {
+            System.out.println("--* Input " + orderChoice + " is out of bounds *--");
+            orderChoice = validateIntInput(":");
+        }
+
+        boolean order;
+        // set order based on input
+        if(orderChoice == 1)
+            order = true; // ascending
+        else
+            order = false; // descending
+
+        try{
+            // pass filter name to apply the right filter before displaying
+            filteredEmployeeList = dao.getEmployeesMatchingFilter(filter, order);
+            displayAllEmployees(filteredEmployeeList);
+
+        } catch(DaoException e) {
+            System.out.println("** Error connecting to database. **" + e.getMessage());
+        }
     }
 
     /**
@@ -321,7 +528,6 @@ public class App {
         }
     }
 
-
     /**
      * Author: Luke Hilliard
      * Use this method whenever you want to take an integer value. Tries to parse user input to a
@@ -340,7 +546,7 @@ public class App {
                 return Integer.parseInt(input.nextLine()); // if the input cannot be parsed to an integer, it is invalid
 
             }catch(NumberFormatException e){
-                System.out.println("\n** Invalid input. Please enter a valid employee ID. **\n");
+                System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
             } catch(InputMismatchException e) {
                 System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
             }
