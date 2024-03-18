@@ -202,6 +202,16 @@ public class App {
     }
 
 
+    /**
+     * Author: Luke Hilliard
+     * Filter employees by a specified comparator and order.
+     * Filter by: First name            Order by: Ascending
+     *            Date of Birth                   Descending
+     *            Salary
+     *
+     *
+     * @param dao connection
+     */
     private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
         List<Employee> filteredEmployeeList = new ArrayList<>();
 
