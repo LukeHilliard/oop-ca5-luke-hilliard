@@ -8,6 +8,7 @@ import Exceptions.DaoException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -55,7 +56,7 @@ public class App {
                         // TODO implement update existing by id
                         break;
                     case 6:
-                        // TODO implement get list matching filters
+                        findEmployeeMatchingFilter(IEmployeeDao);
                         break;
                 }
 
@@ -202,19 +203,71 @@ public class App {
 
 
     private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
-        try {
-            Scanner input = new Scanner(System.in);
-            System.out.println("+-----* Employee Database *-----+");
-            System.out.println("""
-                \t.1 By First Name
-                \t.2 By Date of Birth
-                \t.3 By Salary
+        List<Employee> filteredEmployeeList = new ArrayList<>();
 
-                \t.-1 Return""");
+        // Ask for the type of filter to use
+        System.out.println("+-----* Select Filter *-----+");
+        System.out.println("""
+            \t.1 By First Name
+            \t.2 By Date of Birth
+            \t.3 By Salary
 
+            \t.0 Return""");
+        int filterChoice = validateIntInput(":");
+
+        // validate input further to keep it within range 0 - 3
+        while(filterChoice < 0 || filterChoice > 3 ) {
+            System.out.println("--* Input " + filterChoice + " is out of bounds *--");
+            filterChoice = validateIntInput(":");
+        }
+        // based on user input from the menu options, set a variable to the type of filter they want
+        String filter = "";
+        switch(filterChoice) {
+            case 1:
+                filter = "fName";
+                break;
+            case 2:
+                filter = "dob";
+                break;
+            case 3:
+                filter = "salary";
+                break;
+            case 0:
+                // return to main menu
+                return;
+            default:
+                System.out.println("----* Invalid option, select a corresponding number from the menu. *----");
+        }
+
+        // Ask for the order to display them
+        System.out.println("+-----* Select Order *-----+");
+        System.out.println("""
+            \t.1 Ascending
+            \t.2 Descending
+
+            """);
+        int orderChoice = validateIntInput(":");
+
+        // validate input further to keep it within range 1 - 2
+        while(orderChoice < 1 || orderChoice > 2 ) {
+            System.out.println("--* Input " + orderChoice + " is out of bounds *--");
+            orderChoice = validateIntInput(":");
+        }
+
+        boolean order;
+        // set order based on input
+        if(orderChoice == 1)
+            order = true; // ascending
+        else
+            order = false; // descending
+
+        try{
+            // pass filter name to apply the right filter before displaying
+            filteredEmployeeList = dao.getEmployeesMatchingFilter(filter, order);
+            displayAllEmployees(filteredEmployeeList);
 
         } catch(DaoException e) {
-
+            System.out.println("** Error connecting to database. **" + e.getMessage());
         }
     }
 
@@ -358,7 +411,7 @@ public class App {
                 return Integer.parseInt(input.nextLine()); // if the input cannot be parsed to an integer, it is invalid
 
             }catch(NumberFormatException e){
-                System.out.println("\n** Invalid input. Please enter a valid employee ID. **\n");
+                System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
             } catch(InputMismatchException e) {
                 System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
             }

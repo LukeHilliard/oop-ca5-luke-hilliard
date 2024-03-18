@@ -1,12 +1,18 @@
 package DAOs;
 
+import DTOs.DobComparator;
 import DTOs.Employee;
+import DTOs.FirstnameComparator;
+import DTOs.SalaryComparator;
 import Exceptions.DaoException;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
+
 
 
 /**
@@ -243,19 +249,25 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
 
 
     @Override
-    public List<Employee> getEmployeesMatchingFilter(String filter) {
+    public List<Employee> getEmployeesMatchingFilter(String filter, boolean order) {
         List<Employee> employeesList = new ArrayList<>();
+        try{
+           employeesList = getAllEmployees();
+        }catch(DaoException e) {
+            System.out.println("----* Error retrieving all employees *----");
+        }
+
         switch (filter) {
             case "fName":
-                // TODO filter by first name
+                Collections.sort(employeesList, new FirstnameComparator(order));
                 break;
 
             case "dob":
-                // TODO filter by dob
+                Collections.sort(employeesList, new DobComparator(order));
                 break;
 
             case "salary":
-                // TODO filter by salary
+                Collections.sort(employeesList, new SalaryComparator(order));
                 break;
 
             default:
@@ -265,4 +277,5 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
 
         return employeesList;
     }
+
 }
