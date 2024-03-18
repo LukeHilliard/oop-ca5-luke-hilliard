@@ -247,7 +247,78 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
         return employee;     // reference to User object, or null value
     }
 
+    /**
+     * Author: Katie Lynch
+     * Takes an Employee Object as a parameter and posts the new data to the database
+     *
+     * @param updatedEmployee this will update the new data add it to the database
+     * @throws DaoException catch the exception
+     */
+    @Override
+    public Employee updateEmployee(int id, Employee updatedEmployee) throws DaoException{
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        Employee employee = null;
 
+        try{
+            connection = this.getConnection();
+            //creates query to get one row of data based off of the ID
+            String query = "UPDATE Employees SET  first_name = ?, last_name = ?, gender = ?, dob = ?, salary = ?, role = ?, username = ?,  password = ? WHERE id =?";
+            preparedStatement = connection.prepareStatement(query);
+            //updates employee information with new data
+            preparedStatement.setString(1, updatedEmployee.getFirstName());
+            preparedStatement.setString(2, updatedEmployee.getLastName());
+            preparedStatement.setString(3, updatedEmployee.getGender());
+            preparedStatement.setDate(4, Date.valueOf(updatedEmployee.getDob()));
+            preparedStatement.setDouble(5, updatedEmployee.getSalary());
+            preparedStatement.setString(6, updatedEmployee.getRole());
+            preparedStatement.setString(7, updatedEmployee.getUsername());
+            preparedStatement.setString(8, updatedEmployee.getPassword());
+            preparedStatement.setInt(9, id);
+            //updates one employee that the ID entered matches
+            int updated = preparedStatement.executeUpdate();
+            if(updated > 0){
+                System.out.println("Employee " + id + " was updated");
+            }else{
+                System.out.println("Employee " + id + " does not exist");
+            }
+
+        }catch(SQLException ex){
+            throw new DaoException("Error At updateEmployee(): " + ex.getMessage());
+        }
+        finally
+        {
+            try
+            {
+                if (resultSet != null)
+                {
+                    resultSet.close();
+                }
+                if (preparedStatement != null)
+                {
+                    preparedStatement.close();
+                }
+                if (connection != null)
+                {
+                    freeConnection(connection);
+                }
+            } catch (SQLException e)
+            {
+                throw new DaoException("Exception At updateEmployee() " + e.getMessage());
+            }
+        }return employee;
+    }
+
+
+    /**
+     * Gets an ArrayList of all employees, based on the value of filter, a comparator is used to apply the filter,
+     *  value of order passed ot each comparator to set ASC or DESC
+     *
+     * @param filter field to apply filter to
+     * @param order ascending or descending
+     * @return filtered list of employees
+     */
     @Override
     public List<Employee> getEmployeesMatchingFilter(String filter, boolean order) {
         List<Employee> employeesList = new ArrayList<>();

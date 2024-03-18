@@ -53,7 +53,7 @@ public class App {
                         addEmployee(IEmployeeDao);
                         break;
                     case 5:
-                        // TODO implement update existing by id
+                        displayUpdateEmployeeByID(IEmployeeDao);
                         break;
                     case 6:
                         findEmployeeMatchingFilter(IEmployeeDao);
@@ -201,6 +201,131 @@ public class App {
 
     }
 
+
+    /**
+     *  Author: Katie Lynch
+     *  Displays the menu for updating an existing Employee
+     */
+    private static void displayUpdateEmployeeByID(EmployeeDaoInterface dao){
+        try {
+            displayAllEmployees(dao.getAllEmployees());
+        }catch(DaoException e){
+            System.out.println("----* Error connecting to database *----");
+        }
+
+        try{
+            Scanner kbrd = new Scanner(System.in);
+            int id;
+            String fName, lName, gender, role, username, password, wantToUpdate;
+            double salary;
+            LocalDate dateOfBirth;
+            System.out.println("*---- Update An Employee ----*");
+            System.out.println("\nEnter ID Of Employee You Want To Update:");
+            id = kbrd.nextInt();
+            //checks ID entered is valid
+            if(id <= 0){
+                System.out.println("The Employee ID You Want To Update Must Be Above 0");
+            }else{
+                Employee employee = dao.getEmployeeById(id);
+                //checks employee has data
+                if(employee != null){
+                    System.out.println("Employee To Update: ");
+                    displayOneEmployee(employee);
+                    System.out.println("Enter What You Want To Update:");
+                    wantToUpdate = kbrd.next();
+                    //if the user wants to update a field, that field's data changes but the original data stays
+                    if(wantToUpdate.equalsIgnoreCase("first_name")){
+                        fName = validateStringInput("First Name: ");
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("last_name")){
+                        fName = employee.getFirstName();
+                        lName = validateStringInput("Last Name: ");
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("gender")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = validateStringInput("Gender: ");
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("dob")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = getDateOfBirth();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("salary")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = getAnnualSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("role")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = validateStringInput("Role: ");
+                        username = employee.getUsername();
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("username")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = validateStringInput("Username: ");
+                        password = employee.getPassword();
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else if(wantToUpdate.equalsIgnoreCase("password")){
+                        fName = employee.getFirstName();
+                        lName = employee.getLastName();
+                        gender = employee.getGender();
+                        dateOfBirth = employee.getDob();
+                        salary = employee.getSalary();
+                        role = employee.getRole();
+                        username = employee.getUsername();
+                        password = validateStringInput("Password: ");
+                        dao.updateEmployee(id, new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                    }else{
+                        System.out.println("This Field Does Not Exist");
+                    }
+                }else{
+                    System.out.println("Employee With That ID Was Not Found");
+                }
+            }
+
+        }catch(DaoException ex){
+            System.out.println("Encountered An Error Updating Employee: " + ex.getMessage());
+        }
+    }
 
     /**
      * Author: Luke Hilliard
