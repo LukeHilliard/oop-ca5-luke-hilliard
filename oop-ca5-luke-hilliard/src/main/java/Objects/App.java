@@ -3,6 +3,7 @@ package Objects;
 import DAOs.MySqlEmployeeDao;
 import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
+import DTOs.JsonConverter;
 import Exceptions.DaoException;
 
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ public class App {
                 int choice = 0;
                 EmployeeDaoInterface IEmployeeDao = new MySqlEmployeeDao();
                 displayMainMenu();
+                System.out.print(":");
 
                 choice = input.nextInt();
                 switch (choice) {
@@ -58,6 +60,10 @@ public class App {
                     case 6:
                         findEmployeeMatchingFilter(IEmployeeDao);
                         break;
+                    case 7:
+                        displayJsonOptions(IEmployeeDao);
+                        break;
+
                 }
 
             }while(!exit);
@@ -66,7 +72,7 @@ public class App {
         }
     }
 
-
+// displayJsonList
     /**
      *  Author: Luke Hilliard
      *  Displays the main menu (Default)
@@ -80,8 +86,48 @@ public class App {
                 \t.4 Add an Entity
                 \t.5 Update an existing Entity by ID
                 \t.6 Get list of entities matching a filter
+                \t.7 JSON
 
                 \t.-1 Exit""");
+    }
+
+    /**
+     * Author: Luke Hilliard
+     * Displays menu and takes input for options for JSON functions
+     *
+     * @param dao connection to database
+     */
+    private static void displayJsonOptions(EmployeeDaoInterface dao) {
+        int choice;
+        int key;
+        JsonConverter converter = new JsonConverter();
+        System.out.println("+-------* JSON *-------+");
+        System.out.println("""
+                            \t.1 Display all Entities as JSON
+                            \t.2 Display Entity as JSON by ID                                                          \s
+                            \t.-1 Exit""");
+        choice = validateIntInput(":");
+
+        switch(choice) {
+            case 1:
+                break;
+            case 2:
+                // Display all employees as a table for user to select
+                try {
+                    displayAllEmployees(dao.getAllEmployees());
+                }catch(DaoException e) {
+                    System.out.println("***---- Error getting all employees ----****");
+                }
+
+                System.out.println("----* Select an ID from the table *----");
+                key = validateIntInput(":");
+                converter.employeeToJsonByKey(key);
+                break;
+            case -1:
+                return;
+            default:
+                System.out.print("---* Invalid input, select an option from the menu *---\n:");
+        }
     }
 
 
@@ -92,10 +138,11 @@ public class App {
      *
      * @param dao interface
      */
-    private static void getAllEmployees(EmployeeDaoInterface dao) throws DaoException{
+    private static List<Employee> getAllEmployees(EmployeeDaoInterface dao) throws DaoException{
+        List<Employee> employeeList = new ArrayList<>();
         try {
             System.out.println("\nFinding all employees...");
-            List<Employee> employeeList = dao.getAllEmployees();
+            employeeList = dao.getAllEmployees();
 
             if (employeeList.isEmpty())
                 System.out.println("There are no Employees\n");
@@ -106,6 +153,7 @@ public class App {
             System.out.println("** Error getting employee **" + e.getMessage());
         }
 
+        return employeeList;
     }
 
 

@@ -219,14 +219,14 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
                 String password = resultSet.getString("password");
 
                 employee = new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
+            } else {
+
             }
-        } catch (SQLException e)
-        {
+        }
+        catch (SQLException e) {
             throw new DaoException("findUserByUsernamePassword() " + e.getMessage());
-        } finally
-        {
-            try
-            {
+        } finally {
+            try {
                 if (resultSet != null)
                 {
                     resultSet.close();
@@ -239,8 +239,7 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
                 {
                     freeConnection(connection);
                 }
-            } catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 throw new DaoException("findUserByUsernamePassword() " + e.getMessage());
             }
         }
