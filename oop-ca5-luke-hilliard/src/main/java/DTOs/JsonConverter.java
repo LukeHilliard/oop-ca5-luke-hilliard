@@ -14,8 +14,11 @@ public class JsonConverter {
                 Employee employee = IEmployeeDao.getEmployeeById(key);
 
                 // if there is no employee in the DB with this ID
-                if(employee == null)
-                    throw new EmployeeNotFoundException("No employee with ID: " + key);
+                if(employee == null) {
+                    employeeJson = null;
+                    throw new EmployeeNotFoundException("No employee with ID: " + key + "\n\n");
+                }
+
 
 
             //TODO -> conversion
@@ -24,6 +27,7 @@ public class JsonConverter {
         }
         catch(EmployeeNotFoundException e) {
             System.out.println(e.getMessage());
+
         }
         catch(DaoException e) {
             System.out.println("---* Error connecting to the database *---");

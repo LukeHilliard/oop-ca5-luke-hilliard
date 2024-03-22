@@ -100,6 +100,7 @@ public class App {
     private static void displayJsonOptions(EmployeeDaoInterface dao) {
         int choice;
         int key;
+        String employeeJson = "";
         JsonConverter converter = new JsonConverter();
         System.out.println("+-------* JSON *-------+");
         System.out.println("""
@@ -110,19 +111,32 @@ public class App {
 
         switch(choice) {
             case 1:
+                //TODO
                 break;
             case 2:
                 // Display all employees as a table for user to select
-                try {
-                    displayAllEmployees(dao.getAllEmployees());
-                }catch(DaoException e) {
-                    System.out.println("***---- Error getting all employees ----****");
-                }
+                // Stay in infinite loop until user wants to return to main menu
+                while(true) {
 
-                System.out.println("----* Select an ID from the table *----");
-                key = validateIntInput(":");
-                converter.employeeToJsonByKey(key);
-                break;
+                    // get employees to populate table
+                    try {
+                        displayAllEmployees(dao.getAllEmployees());
+                    } catch (DaoException e) {
+                        System.out.println("***---- Error getting all employees ----****");
+                    }
+
+                    // ask for ID of user
+                    System.out.println("----* Select an ID from the table *----");
+                    key = validateIntInput(":");
+
+                    // pass key to converter
+                    employeeJson = converter.employeeToJsonByKey(key);
+
+                    // if converter didnt return null exit loop
+                    if(employeeJson != null) {
+                        break;
+                    }
+                }
             case -1:
                 return;
             default:
@@ -425,10 +439,10 @@ public class App {
         // Ask for the order to display them
         System.out.println("+-----* Select Order *-----+");
         System.out.println("""
-            \t.1 Ascending
-            \t.2 Descending
-
-            """);
+                            \t.1 Ascending
+                            \t.2 Descending
+                
+                            """);
         int orderChoice = validateIntInput(":");
 
         // validate input further to keep it within range 1 - 2
