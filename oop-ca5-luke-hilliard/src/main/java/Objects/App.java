@@ -5,6 +5,7 @@ import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
 import DTOs.JsonConverter;
 import Exceptions.DaoException;
+import com.google.gson.Gson;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -100,47 +101,58 @@ public class App {
     private static void displayJsonOptions(EmployeeDaoInterface dao) {
         int choice;
         int key;
+        boolean exit = false;
         String employeeJson = "";
         JsonConverter converter = new JsonConverter();
-        System.out.println("+-------* JSON *-------+");
-        System.out.println("""
-                            \t.1 Display all Entities as JSON
-                            \t.2 Display Entity as JSON by ID                                                          \s
-                            \t.-1 Exit""");
-        choice = validateIntInput(":");
+        while(!exit) {
+            System.out.println("+-------* JSON *-------+");
+            System.out.println("""
+                    \t. 1 Display all Entities as JSON
+                    \t. 2 Display Entity as JSON by ID                                                          \s
+                    \t.-1 Return""");
+            choice = validateIntInput(":");
 
-        switch(choice) {
-            case 1:
-                //TODO
-                break;
-            case 2:
-                // Display all employees as a table for user to select
-                // Stay in infinite loop until user wants to return to main menu
-                while(true) {
 
-                    // get employees to populate table
-                    try {
-                        displayAllEmployees(dao.getAllEmployees());
-                    } catch (DaoException e) {
-                        System.out.println("***---- Error getting all employees ----****");
+            switch (choice) {
+                case 1:
+
+
+
+                    break;
+                case 2:
+                    // Display all employees as a table for user to select
+                    // Stay in loop until user wants to return to main menu
+                    while (true) {
+
+                        // get employees to populate table
+                        try {
+                            displayAllEmployees(dao.getAllEmployees());
+                        } catch (DaoException e) {
+                            System.out.println("***---- Error getting employees ----****");
+                        }
+
+                        // ask for ID of user
+                        System.out.println("----* Select an ID from the table (-1 to exit) *----");
+                        key = validateIntInput(":");
+                        if(key == -1)
+                            break;
+
+                        // pass key to converter
+                        employeeJson = converter.employeeToJsonByKey(key);
+
+
+                        // if converter did not return null, display JSON and exit loop
+                        if (employeeJson != null) {
+                            System.out.println(employeeJson);
+                        }
                     }
+                    break;
 
-                    // ask for ID of user
-                    System.out.println("----* Select an ID from the table *----");
-                    key = validateIntInput(":");
-
-                    // pass key to converter
-                    employeeJson = converter.employeeToJsonByKey(key);
-
-                    // if converter didnt return null exit loop
-                    if(employeeJson != null) {
-                        break;
-                    }
-                }
-            case -1:
-                return;
-            default:
-                System.out.print("---* Invalid input, select an option from the menu *---\n:");
+                case -1:
+                    exit = true;
+                default:
+                    System.out.print("---* Invalid input, select an option from the menu *---\n:");
+            }
         }
     }
 
