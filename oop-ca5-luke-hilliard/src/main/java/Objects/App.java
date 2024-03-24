@@ -5,6 +5,8 @@ import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
 import DTOs.JsonConverter;
 import Exceptions.DaoException;
+import Exceptions.EmployeeNotFoundException;
+import Exceptions.InvalidIdException;
 import com.google.gson.Gson;
 
 import java.time.LocalDate;
@@ -104,17 +106,26 @@ public class App {
      */
     private static void findEmployeeByID(EmployeeDaoInterface dao) {
         int id;
+
         try {
-            id = validateIntInput("Enter an ID to find: ");
+            // stay in infinite loop until user wants to return back to main menu by entering -1
+            while(true) {
+                id = validateIntInput("\nEnter an ID to find (-1 to return): ");
+                if(id == -1) {
+                    System.out.println("\n");
+                    break; // exit loop and return to main menu
+                }
 
-            System.out.println("Finding employee...");
-            Employee employee = dao.getEmployeeById(id);
+                // create new employee object from database
+                System.out.println("Finding employee...");
+                Employee employee = dao.getEmployeeById(id);
 
-            if(employee != null)
-                displayOneEmployee(employee);
-        }
-        catch( DaoException e)
-        {
+                // if database returned an employee, display it
+                if (employee != null)
+                    displayOneEmployee(employee);
+            }
+
+        } catch(DaoException e) {
             System.out.println("** Error finding employee. **" + e.getMessage());
         }
     }
@@ -122,6 +133,7 @@ public class App {
 
     /**
      * Author: Katie Lynch
+     * Other contributors: Luke Hilliard
      * Deleting an Employee from the database
      *
      * @param dao interface
@@ -129,25 +141,62 @@ public class App {
     private static void deleteEmployeeByID(EmployeeDaoInterface dao){
 
         try{
-            int id;
-            id = validateIntInput("Enter ID of Employee to be deleted (-1 to cancel): ");
+            while(true) {
+                int id;
+                boolean confirmDelete = false;
+                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return): ");
 
-            if(id == -1) { // exit method
-                System.out.println("Cancelling...\n");
-                return;
+                if(id == -1) { // exit method
+                    System.out.println("Cancelling...\n");
+                    return;
+                }
+
+                //check that id is above 0
+                if (id > -1) {
+                    if(dao.getEmployeeById(id) != null) { // if id returns a result
+                        Scanner input = new Scanner(System.in);
+                        char choice;
+
+
+                        // initialize an2 employee for displaying
+                        Employee employeeView = dao.getEmployeeById(id);
+                        displayOneEmployee(employeeView);
+
+                        // confirm deletion
+                        System.out.print("\nAre you sure you want to delete " + employeeView.getFirstName() + " " + employeeView.getLastName() + "? \ny/n:");
+                        choice = input.next().charAt(0);
+
+                        // Lock user here until they make a decision
+                        while(true) {
+                            if(choice == 'y') {
+                                confirmDelete = true;
+                                break;
+                            } else if(choice == 'n'){
+                                id = -1;
+                                break;
+                            } else {
+                                System.out.print("\n* Invalid, enter 'y' for YES, 'n' for NO *\n y/n: ");
+                            }
+                            choice = input.next().charAt(0); // take input again
+                        }
+
+                    }
+                } else {
+                    throw new InvalidIdException("ID must be greater than 0");
+                }
+
+                if(confirmDelete) {
+                    System.out.println("Deleting Employee with ID: " + id);
+                    dao.deleteEmployee(id);
+                }
             }
 
-            //checks that ID entered is above 0 as ID cannot be 0 or anything less
-            if (id <= 0) {
-                System.out.println("The Employee ID you want to delete must be above 0");
-            } else {
-                System.out.println("Deleting Employee with ID: " + id);
-                //checks for employee ID in database and deletes it if it is there
-                dao.deleteEmployee(id);
-            }
 
-        }catch (DaoException ex){
+
+        } catch (DaoException ex){
             System.out.println("** Error deleting employee **" + ex.getMessage());
+        } catch(InvalidIdException e){
+            System.out.println(e.getMessage());
         }
     }
 
@@ -172,7 +221,7 @@ public class App {
             salary = getAnnualSalary();
             role = validateStringInput("\tRole: ");
 
-            // TODO hash password??, create better validation for these two in particular
+
             username = validateStringInput("\tUsername: ");
             password = validateStringInput("\tPassword: ");
 

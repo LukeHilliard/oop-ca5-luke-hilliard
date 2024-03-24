@@ -150,7 +150,9 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
             }
         } catch (SQLException e) {
             throw new DaoException("findAllEmployees() " + e.getMessage());
-        } finally {
+        }
+
+        finally {
             try {
                 if (resultSet != null)
                     resultSet.close();
@@ -242,6 +244,7 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
             //creates query to get one row of data based off of the ID
             String query = "UPDATE Employees SET  first_name = ?, last_name = ?, gender = ?, dob = ?, salary = ?, role = ?, username = ?,  password = ? WHERE id =?";
             preparedStatement = connection.prepareStatement(query);
+
             //updates employee information with new data
             preparedStatement.setString(1, updatedEmployee.getFirstName());
             preparedStatement.setString(2, updatedEmployee.getLastName());
@@ -252,6 +255,8 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
             preparedStatement.setString(7, updatedEmployee.getUsername());
             preparedStatement.setString(8, updatedEmployee.getPassword());
             preparedStatement.setInt(9, id);
+
+
             //updates one employee that the ID entered matches
             int updated = preparedStatement.executeUpdate();
             if(updated > 0){
@@ -265,6 +270,7 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
         } catch(EmployeeNotFoundException e) {
             System.out.println(e.getMessage() );
         }
+
         finally {
             try {
                 if (resultSet != null)
