@@ -21,10 +21,6 @@ import java.util.Scanner;
  *
  */
 
-/*
-      TODO - 1. change string validation to allow space characters
-      TODO - 2.
- */
 public class App {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
@@ -44,7 +40,8 @@ public class App {
                         exit = true;
                         break;
                     case 1:
-                        getAllEmployees(IEmployeeDao);
+                        // call method1 to display all employees, pass a call to method2 as a parameter, method 2 returns a List of Employee objects
+                        displayAllEmployees(getAllEmployees(IEmployeeDao));;
                         break;
                     case 2:
                         findEmployeeByID(IEmployeeDao);
@@ -73,89 +70,6 @@ public class App {
         }
     }
 
-// displayJsonList
-    /**
-     *  Author: Luke Hilliard
-     *  Displays the main menu (Default)
-     */
-    private static void displayMainMenu() {
-        System.out.println("+-----* Employee Database *-----+");
-        System.out.println("""
-                \t.1 Display all Entities
-                \t.2 Display Entity by ID
-                \t.3 Delete Entity by ID
-                \t.4 Add an Entity
-                \t.5 Update an existing Entity by ID
-                \t.6 Get list of entities matching a filter
-                \t.7 JSON
-
-                \t.-1 Exit""");
-    }
-
-    /**
-     * Author: Luke Hilliard
-     * Displays menu and takes input for options for JSON functions
-     *
-     * @param dao connection to database
-     */
-    private static void displayJsonOptions(EmployeeDaoInterface dao) {
-        int choice;
-        int key;
-        boolean exit = false;
-        String employeeJson = "";
-        JsonConverter converter = new JsonConverter();
-        while(!exit) {
-            System.out.println("+-------* JSON *-------+");
-            System.out.println("""
-                    \t. 1 Display all Entities as JSON
-                    \t. 2 Display Entity as JSON by ID                                                          \s
-                    \t.-1 Return""");
-            choice = validateIntInput(":");
-
-
-            switch (choice) {
-                case 1:
-
-
-
-                    break;
-                case 2:
-                    // Display all employees as a table for user to select
-                    // Stay in loop until user wants to return to main menu
-                    while (true) {
-
-                        // get employees to populate table
-                        try {
-                            displayAllEmployees(dao.getAllEmployees());
-                        } catch (DaoException e) {
-                            System.out.println("***---- Error getting employees ----****");
-                        }
-
-                        // ask for ID of user
-                        System.out.println("----* Select an ID from the table (-1 to exit) *----");
-                        key = validateIntInput(":");
-                        if(key == -1)
-                            break;
-
-                        // pass key to converter
-                        employeeJson = converter.employeeToJsonByKey(key);
-
-
-                        // if converter did not return null, display JSON and exit loop
-                        if (employeeJson != null) {
-                            System.out.println(employeeJson);
-                        }
-                    }
-                    break;
-
-                case -1:
-                    exit = true;
-                default:
-                    System.out.print("---* Invalid input, select an option from the menu *---\n:");
-            }
-        }
-    }
-
 
     /**
      *  Author: Haroldas Tamosauskas
@@ -172,9 +86,7 @@ public class App {
 
             if (employeeList.isEmpty())
                 System.out.println("There are no Employees\n");
-            else {
-                displayAllEmployees(employeeList); // display employees as a table
-            }
+
         } catch(DaoException e) {
             System.out.println("** Error getting employee **" + e.getMessage());
         }
@@ -479,6 +391,88 @@ public class App {
             System.out.println("** Error connecting to database. **" + e.getMessage());
         }
     }
+    /**
+     *  Author: Luke Hilliard
+     *  Displays the main menu (Default)
+     */
+    private static void displayMainMenu() {
+        System.out.println("+-----* Employee Database *-----+");
+        System.out.println("""
+                \t.1 Display all Entities
+                \t.2 Display Entity by ID
+                \t.3 Delete Entity by ID
+                \t.4 Add an Entity
+                \t.5 Update an existing Entity by ID
+                \t.6 Get list of entities matching a filter
+                \t.7 JSON
+
+                \t.-1 Exit""");
+    }
+
+    /**
+     * Author: Luke Hilliard
+     * Displays menu and takes input for options for JSON functions
+     *
+     * @param dao connection to database
+     */
+    private static void displayJsonOptions(EmployeeDaoInterface dao) {
+        int choice;
+        int key;
+        boolean exit = false;
+        String employeeJson = "";
+        JsonConverter converter = new JsonConverter();
+        while(!exit) {
+            System.out.println("+-------* JSON *-------+");
+            System.out.println("""
+                    \t. 1 Display all Entities as JSON
+                    \t. 2 Display Entity as JSON by ID                                                          \s
+                    \t.-1 Return""");
+            choice = validateIntInput(":");
+
+
+            switch (choice) {
+                case 1:
+
+
+
+                    break;
+                case 2:
+                    // Display all employees as a table for user to select
+                    // Stay in loop until user wants to return to main menu
+                    while (true) {
+
+                        // get employees to populate table
+                        try {
+                            displayAllEmployees(dao.getAllEmployees());
+                        } catch (DaoException e) {
+                            System.out.println("***---- Error getting employees ----****");
+                        }
+
+                        // ask for ID of user
+                        System.out.println("----* Select an ID from the table (-1 to exit) *----");
+                        key = validateIntInput(":");
+                        if(key == -1)
+                            break;
+
+                        // pass key to converter
+                        employeeJson = converter.employeeToJsonByKey(key);
+
+
+                        // if converter did not return null, display JSON and exit loop
+                        if (employeeJson != null) {
+                            System.out.println(employeeJson);
+                        }
+                    }
+                    break;
+
+                case -1:
+                    exit = true;
+                default:
+                    System.out.print("---* Invalid input, select an option from the menu *---\n:");
+            }
+        }
+    }
+
 
     /**
      * Author: Luke Hilliard
