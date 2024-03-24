@@ -103,18 +103,15 @@ public class App {
      * @param dao interface
      */
     private static void findEmployeeByID(EmployeeDaoInterface dao) {
+        int id;
         try {
-            int id;
-
             id = validateIntInput("Enter an ID to find: ");
 
-            System.out.println("Finding employee with id " + id + "...");
+            System.out.println("Finding employee...");
             Employee employee = dao.getEmployeeById(id);
 
             if(employee != null)
                 displayOneEmployee(employee);
-            else
-                System.out.println("Employee with that ID was not found\n");
         }
         catch( DaoException e)
         {

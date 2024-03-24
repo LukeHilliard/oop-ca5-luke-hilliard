@@ -34,6 +34,7 @@ public class Employee {
         this.password = password;
     }
 
+
     // Without id
     public Employee(String firstName, String lastName, String gender, LocalDate dob, double salary, String role, String username, String password) {
         this.firstName = firstName;

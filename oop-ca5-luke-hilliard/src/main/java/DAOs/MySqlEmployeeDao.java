@@ -5,6 +5,7 @@ import DTOs.Employee;
 import DTOs.FirstnameComparator;
 import DTOs.SalaryComparator;
 import Exceptions.DaoException;
+import Exceptions.EmployeeNotFoundException;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -21,7 +22,6 @@ import java.util.Scanner;
  *
  */
 public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
-
     /**
      * Author: Luke Hilliard
      * Takes an Employee Object as a parameter and posts the data to the database
@@ -36,7 +36,6 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
 
         try {
             connection = this.getConnection();
-
             String query = "INSERT INTO Employees (id, first_name, last_name, gender, dob, salary, role, username, password) " +
                     "VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)";
             preparedStatement = connection.prepareStatement(query);
@@ -50,28 +49,24 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
             preparedStatement.setString(6, newEmployeeData.getRole());
             preparedStatement.setString(7, newEmployeeData.getUsername());
             preparedStatement.setString(8, newEmployeeData.getPassword());
-
             preparedStatement.executeUpdate();
+
         } catch (SQLException e) {
-            throw new DaoException("addEmployee() " + e.getMessage());
+            throw new DaoException("addEmployee()\t" + e.getMessage());
+
         } finally {
-            try
-            {
+            try {
                 if (resultSet != null)
-                {
                     resultSet.close();
-                }
+
                 if (preparedStatement != null)
-                {
                     preparedStatement.close();
-                }
+
                 if (connection != null)
-                {
                     freeConnection(connection);
-                }
-            } catch (SQLException e)
-            {
-                throw new DaoException("addEmployee() " + e.getMessage());
+
+            } catch (SQLException e) {
+                System.out.print("addEmployee()\t" + e.getMessage());
             }
         }
     }
@@ -89,7 +84,6 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
         try{
             connection = this.getConnection();
             //creates query to delete a row of employee data using the ID parameter passed in
-
             String query = "DELETE FROM Employees WHERE id = ?";
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, id);
@@ -100,30 +94,26 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
             if(deletedRows > 0){
                 System.out.println("Employee " + id + " was deleted");
             }else{
-                System.out.println("Employee " + id + " does not exist");
+                throw new EmployeeNotFoundException("No employee found with ID: " + id + "\n");
             }
 
-        }catch (SQLException ex){
+        } catch (SQLException ex){
             throw new DaoException("deleteEmployee(): " + ex.getMessage());
-        }finally
-        {
-            try
-            {
+        }  catch (EmployeeNotFoundException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            try {
                 if (resultSet != null)
-                {
                     resultSet.close();
-                }
+
                 if (preparedStatement != null)
-                {
                     preparedStatement.close();
-                }
+
                 if (connection != null)
-                {
                     freeConnection(connection);
-                }
-            } catch (SQLException ex)
-            {
-                throw new DaoException("deleteEmployee() " + ex.getMessage());
+
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -137,18 +127,14 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
         ResultSet resultSet = null;
         List<Employee> EmployeesList = new ArrayList<>();
 
-        try
-        {
-
+        try {
             connection = this.getConnection();
 
             String query = "SELECT * FROM Employees";
             preparedStatement = connection.prepareStatement(query);
-
-
             resultSet = preparedStatement.executeQuery();
-            while (resultSet.next())
-            {
+
+            while (resultSet.next()) {
                 int employeeId = resultSet.getInt("id");
                 String firstName = resultSet.getString("first_name");
                 String lastName = resultSet.getString("last_name");
@@ -159,31 +145,24 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
                 String username = resultSet.getString("username");
                 String password = resultSet.getString("password");
 
-                Employee u = new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
-                EmployeesList.add(u);
+                Employee employee = new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
+                EmployeesList.add(employee);
             }
-        } catch (SQLException e)
-        {
-            throw new DaoException("findAllEmployeeresultSet() " + e.getMessage());
-        } finally
-        {
-            try
-            {
+        } catch (SQLException e) {
+            throw new DaoException("findAllEmployees() " + e.getMessage());
+        } finally {
+            try {
                 if (resultSet != null)
-                {
                     resultSet.close();
-                }
+
                 if (preparedStatement != null)
-                {
                     preparedStatement.close();
-                }
+
                 if (connection != null)
-                {
                     freeConnection(connection);
-                }
-            } catch (SQLException e)
-            {
-                throw new DaoException("getAllEmployees() " + e.getMessage());
+
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
         return EmployeesList;
@@ -197,17 +176,15 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         Employee employee = null;
-        try
-        {
+        try {
             connection = this.getConnection();
 
             String query = "SELECT * FROM Employees WHERE id = ?";
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, id);
-
             resultSet = preparedStatement.executeQuery();
-            if (resultSet.next())
-            {
+
+            if (resultSet.next()) {
                 int employeeId = resultSet.getInt("id");
                 String firstName = resultSet.getString("first_name");
                 String lastName = resultSet.getString("last_name");
@@ -220,27 +197,27 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
 
                 employee = new Employee(employeeId, firstName, lastName, gender, dob, salary, role, username, password);
             } else {
-
+                throw new EmployeeNotFoundException("No employee found with ID: " + id + "\n");
             }
-        }
-        catch (SQLException e) {
+
+        } catch(EmployeeNotFoundException e) {
+            System.out.println(e.getMessage());
+        } catch (SQLException e) {
             throw new DaoException("findUserByUsernamePassword() " + e.getMessage());
+
         } finally {
             try {
                 if (resultSet != null)
-                {
                     resultSet.close();
-                }
+
                 if (preparedStatement != null)
-                {
                     preparedStatement.close();
-                }
+
                 if (connection != null)
-                {
                     freeConnection(connection);
-                }
+
             } catch (SQLException e) {
-                throw new DaoException("findUserByUsernamePassword() " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
         return employee;     // reference to User object, or null value
@@ -280,37 +257,35 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
             if(updated > 0){
                 System.out.println("Employee " + id + " was updated");
             }else{
-                System.out.println("Employee " + id + " does not exist");
+                throw new EmployeeNotFoundException("No employee found with ID: " + id + "\n");
             }
 
-        }catch(SQLException ex){
-            throw new DaoException("Error At updateEmployee(): " + ex.getMessage());
+        } catch(SQLException e) {
+            throw new DaoException("Error At updateEmployee(): " + e.getMessage());
+        } catch(EmployeeNotFoundException e) {
+            System.out.println(e.getMessage() );
         }
-        finally
-        {
-            try
-            {
+        finally {
+            try {
                 if (resultSet != null)
-                {
                     resultSet.close();
-                }
+
                 if (preparedStatement != null)
-                {
                     preparedStatement.close();
-                }
+
                 if (connection != null)
-                {
                     freeConnection(connection);
-                }
-            } catch (SQLException e)
-            {
-                throw new DaoException("Exception At updateEmployee() " + e.getMessage());
+
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
-        }return employee;
+        }
+        return employee;
     }
 
 
     /**
+     * Author: Luke Hilliard
      * Gets an ArrayList of all employees, based on the value of filter, a comparator is used to apply the filter,
      *  value of order passed ot each comparator to set ASC or DESC
      *
