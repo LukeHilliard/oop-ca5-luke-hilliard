@@ -158,12 +158,12 @@ public class App {
                         char choice;
 
 
-                        // initialize an2 employee for displaying
+                        // initialize an employee for displaying
                         Employee employeeView = dao.getEmployeeById(id);
                         displayOneEmployee(employeeView);
 
                         // confirm deletion
-                        System.out.print("\nAre you sure you want to delete " + employeeView.getFirstName() + " " + employeeView.getLastName() + "? \ny/n:");
+                        System.out.print("Are you sure you want to delete " + employeeView.getFirstName() + " " + employeeView.getLastName() + "? \ny/n:");
                         choice = input.next().charAt(0);
 
                         // Lock user here until they make a decision
@@ -487,26 +487,37 @@ public class App {
                     // Stay in loop until user wants to return to main menu
                     while (true) {
 
-                        // get employees to populate table
-                        try {
-                            displayAllEmployees(dao.getAllEmployees());
-                        } catch (DaoException e) {
-                            System.out.println("***---- Error getting employees ----****");
-                        }
+
 
                         // ask for ID of user
-                        System.out.println("----* Select an ID from the table (-1 to exit) *----");
+                        System.out.println("----* Enter an employee ID (-1 to exit, -2 to display all) *----");
                         key = validateIntInput(":");
                         if(key == -1)
                             break;
 
-                        // pass key to converter
-                        employeeJson = converter.employeeToJsonByKey(key);
+                        if(key == -2) {
+                            // display all employees as a table
+                            try {
+                                if(dao.getEmployeeById(key) == null)  {
+                                    throw new InvalidIdException("No employee found with ID: " + key + "\n");
+                                } else {
+                                    displayAllEmployees(dao.getAllEmployees());
+                                }
+
+                            } catch (DaoException e) {
+                                System.out.println("***---- Error getting employees ----****");
+                            } catch (InvalidIdException e) {
+                                System.out.println(e.getMessage());
+                            }
+                        } else {
+                            // pass key to converter
+                            employeeJson = converter.employeeToJsonByKey(key);
 
 
-                        // if converter did not return null, display JSON and exit loop
-                        if (employeeJson != null) {
-                            System.out.println(employeeJson);
+                            // if converter did not return null, display JSON and exit loop
+                            if (employeeJson != null) {
+                                System.out.println(employeeJson);
+                            }
                         }
                     }
                     break;
