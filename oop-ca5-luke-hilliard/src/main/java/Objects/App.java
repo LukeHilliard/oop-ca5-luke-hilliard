@@ -505,13 +505,20 @@ public class App {
         String employeeJson = "";
         JsonConverter converter = new JsonConverter();
         while(!exit) {
-            System.out.println("+-------* JSON *-------+");
             System.out.println("""
-                    \t. 1 Display all Entities as JSON
-                    \t. 2 Display Entity as JSON by ID                                                          \s
-                    \t.-1 Return""");
-            choice = validateIntInput(":");
+                    +--------------------* JSON *-------------------+
+                    |                                               |
+                    |       . 1 Display all Employees as JSON       |
+                    |       . 2 Display Employee as JSON by ID      |
+                    |                                               |
+                    |       .-1 Return                              |
+                    +-----------------------------------------------+
+                    """);
 
+            choice = validateIntInput(":");
+            if(choice == -1) {
+                return;
+            }
 
             switch (choice) {
                 case 1:
@@ -523,44 +530,38 @@ public class App {
                     // Display all employees as a table for user to select
                     // Stay in loop until user wants to return to main menu
                     while (true) {
-
-
+                        boolean selectedDisplayAll = false;
 
                         // ask for ID of user
-                        System.out.println("----* Enter an employee ID (-1 to exit, -2 to display all) *----");
-                        key = validateIntInput(":");
+                        System.out.print("----* Enter an employee ID (-1 to exit, -2 to display all) ");
+                        key = validateIntInput(": ");
                         if(key == -1)
                             break;
 
-                        if(key == -2) {
-                            // display all employees as a table
-                            try {
-                                if(dao.getEmployeeById(key) == null)  {
-                                    throw new InvalidIdException("No employee found with ID: " + key + "\n");
-                                } else {
-                                    displayAllEmployees(dao.getAllEmployees());
-                                }
+                        if(key == -2)
+                            selectedDisplayAll = true;
 
-                            } catch (DaoException e) {
-                                System.out.println("***---- Error getting employees ----****");
-                            } catch (InvalidIdException e) {
-                                System.out.println(e.getMessage());
-                            }
-                        } else {
+                        // if user hasnt selected display all, do conversion else skip conversion and display all
+                        if(!selectedDisplayAll) {
                             // pass key to converter
                             employeeJson = converter.employeeToJsonByKey(key);
-
 
                             // if converter did not return null, display JSON and exit loop
                             if (employeeJson != null) {
                                 System.out.println(employeeJson);
                             }
+                        } else {
+                            try {
+                                System.out.println("Retrieving all employees...");
+                                displayAllEmployees(dao.getAllEmployees());
+                            } catch(DaoException e) {
+                                System.out.println(e.getMessage());
+                            }
+
                         }
+
                     }
                     break;
-
-                case -1:
-                    exit = true;
                 default:
                     System.out.print("---* Invalid input, select an option from the menu *---\n:");
             }
