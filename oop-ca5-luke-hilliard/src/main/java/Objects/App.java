@@ -381,6 +381,7 @@ public class App {
      */
     private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
         List<Employee> filteredEmployeeList = new ArrayList<>();
+        String filterMessage = "";
 
         // Ask for the type of filter to use
         System.out.println("+-----* Select Filter *-----+");
@@ -438,9 +439,32 @@ public class App {
         else
             order = false; // descending
 
+        // set filter message
+        switch(filter) {
+            case "fName":
+                if(order)
+                    filterMessage = "Retrieving employees based on first name ASC...";
+                else
+                    filterMessage = "Retrieving employees based on first name DESC...";
+                break;
+            case "dob":
+                if(order)
+                    filterMessage = "Retrieving employees based on date of birth ASC...";
+                else
+                    filterMessage = "Retrieving employees based on date of birth DESC...";
+                break;
+            case "salary":
+                if(order)
+                    filterMessage = "Retrieving employees based on salary ASC...";
+                else
+                    filterMessage = "Retrieving employees based on salary DESC...";
+                break;
+        }
+
         try{
             // pass filter name to apply the right filter before displaying
             filteredEmployeeList = dao.getEmployeesMatchingFilter(filter, order);
+            System.out.println("\n" + filterMessage);
             displayAllEmployees(filteredEmployeeList);
 
         } catch(DaoException e) {
