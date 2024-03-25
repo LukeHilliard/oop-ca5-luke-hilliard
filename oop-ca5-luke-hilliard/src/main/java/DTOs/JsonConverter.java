@@ -7,7 +7,6 @@ import Exceptions.EmployeeNotFoundException;
 import Utilities.LocalDateAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import java.time.LocalDate;
 
 public class JsonConverter {
@@ -23,12 +22,6 @@ public class JsonConverter {
                 employeeJson = null;
                 throw new EmployeeNotFoundException("No employee with ID: " + key + "\n\n");
             }
-
-
-
-        //TODO -> conversion
-//            System.out.println(employee);
-//            System.out.println("key: " + key);
 
             // using GsonBuilder to apply the LocalDateAdapter created in the Utilities package
             Gson gsonParser = new GsonBuilder()

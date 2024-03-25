@@ -5,6 +5,8 @@ import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
 import DTOs.JsonConverter;
 import Exceptions.DaoException;
+import Exceptions.EmployeeNotFoundException;
+import Exceptions.InvalidIdException;
 import com.google.gson.Gson;
 
 import java.time.LocalDate;
@@ -21,10 +23,6 @@ import java.util.Scanner;
  *
  */
 
-/*
-      TODO - 1. change string validation to allow space characters
-      TODO - 2.
- */
 public class App {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
@@ -44,7 +42,8 @@ public class App {
                         exit = true;
                         break;
                     case 1:
-                        getAllEmployees(IEmployeeDao);
+                        // call method1 to display all employees, pass a call to method2 as a parameter, method 2 returns a List of Employee objects
+                        displayAllEmployees(getAllEmployees(IEmployeeDao));;
                         break;
                     case 2:
                         findEmployeeByID(IEmployeeDao);
@@ -73,89 +72,6 @@ public class App {
         }
     }
 
-// displayJsonList
-    /**
-     *  Author: Luke Hilliard
-     *  Displays the main menu (Default)
-     */
-    private static void displayMainMenu() {
-        System.out.println("+-----* Employee Database *-----+");
-        System.out.println("""
-                \t.1 Display all Entities
-                \t.2 Display Entity by ID
-                \t.3 Delete Entity by ID
-                \t.4 Add an Entity
-                \t.5 Update an existing Entity by ID
-                \t.6 Get list of entities matching a filter
-                \t.7 JSON
-
-                \t.-1 Exit""");
-    }
-
-    /**
-     * Author: Luke Hilliard
-     * Displays menu and takes input for options for JSON functions
-     *
-     * @param dao connection to database
-     */
-    private static void displayJsonOptions(EmployeeDaoInterface dao) {
-        int choice;
-        int key;
-        boolean exit = false;
-        String employeeJson = "";
-        JsonConverter converter = new JsonConverter();
-        while(!exit) {
-            System.out.println("+-------* JSON *-------+");
-            System.out.println("""
-                    \t. 1 Display all Entities as JSON
-                    \t. 2 Display Entity as JSON by ID                                                          \s
-                    \t.-1 Return""");
-            choice = validateIntInput(":");
-
-
-            switch (choice) {
-                case 1:
-
-
-
-                    break;
-                case 2:
-                    // Display all employees as a table for user to select
-                    // Stay in loop until user wants to return to main menu
-                    while (true) {
-
-                        // get employees to populate table
-                        try {
-                            displayAllEmployees(dao.getAllEmployees());
-                        } catch (DaoException e) {
-                            System.out.println("***---- Error getting employees ----****");
-                        }
-
-                        // ask for ID of user
-                        System.out.println("----* Select an ID from the table (-1 to exit) *----");
-                        key = validateIntInput(":");
-                        if(key == -1)
-                            break;
-
-                        // pass key to converter
-                        employeeJson = converter.employeeToJsonByKey(key);
-
-
-                        // if converter did not return null, display JSON and exit loop
-                        if (employeeJson != null) {
-                            System.out.println(employeeJson);
-                        }
-                    }
-                    break;
-
-                case -1:
-                    exit = true;
-                default:
-                    System.out.print("---* Invalid input, select an option from the menu *---\n:");
-            }
-        }
-    }
-
 
     /**
      *  Author: Haroldas Tamosauskas
@@ -167,14 +83,12 @@ public class App {
     private static List<Employee> getAllEmployees(EmployeeDaoInterface dao) throws DaoException{
         List<Employee> employeeList = new ArrayList<>();
         try {
-            System.out.println("\nFinding all employees...");
+            System.out.println("\nRetrieving all employees...");
             employeeList = dao.getAllEmployees();
 
             if (employeeList.isEmpty())
                 System.out.println("There are no Employees\n");
-            else {
-                displayAllEmployees(employeeList); // display employees as a table
-            }
+
         } catch(DaoException e) {
             System.out.println("** Error getting employee **" + e.getMessage());
         }
@@ -191,21 +105,27 @@ public class App {
      * @param dao interface
      */
     private static void findEmployeeByID(EmployeeDaoInterface dao) {
+        int id;
+
         try {
-            int id;
+            // stay in infinite loop until user wants to return back to main menu by entering -1
+            while(true) {
+                id = validateIntInput("\nEnter an ID to find (-1 to return): ");
+                if(id == -1) {
+                    System.out.println("\n");
+                    break; // exit loop and return to main menu
+                }
 
-            id = validateIntInput("Enter an ID to find: ");
+                // create new employee object from database
+                System.out.println("Finding employee...");
+                Employee employee = dao.getEmployeeById(id);
 
-            System.out.println("Finding employee with id " + id + "...");
-            Employee employee = dao.getEmployeeById(id);
+                // if database returned an employee, display it
+                if (employee != null)
+                    displayOneEmployee(employee);
+            }
 
-            if(employee != null)
-                displayOneEmployee(employee);
-            else
-                System.out.println("Employee with that ID was not found\n");
-        }
-        catch( DaoException e)
-        {
+        } catch(DaoException e) {
             System.out.println("** Error finding employee. **" + e.getMessage());
         }
     }
@@ -213,6 +133,7 @@ public class App {
 
     /**
      * Author: Katie Lynch
+     * Other contributors: Luke Hilliard
      * Deleting an Employee from the database
      *
      * @param dao interface
@@ -220,25 +141,72 @@ public class App {
     private static void deleteEmployeeByID(EmployeeDaoInterface dao){
 
         try{
-            int id;
-            id = validateIntInput("Enter ID of Employee to be deleted (-1 to cancel): ");
+            while(true) {
+                int id;
+                boolean confirmDelete = false;
+                boolean selectedDisplayAll = false;
+                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return, -2 to display all): ");
 
-            if(id == -1) { // exit method
-                System.out.println("Cancelling...\n");
-                return;
+                if(id == -1) { // exit method
+                    System.out.println("Cancelling...\n");
+                    return;
+                }
+                if(id == -2) { // display all and skip over this input
+                    selectedDisplayAll = true;
+                    System.out.println("\nRetrieving all employees...");
+                    displayAllEmployees(dao.getAllEmployees());
+
+                }
+
+
+                // if user hasn't selected display all, their input is used here, else skip over this and ask for id again
+                if(!selectedDisplayAll) {
+
+                    if (id > -1) {//check that id is above -1
+                        if (dao.getEmployeeById(id) != null) { // if id returns a result
+                            Scanner input = new Scanner(System.in);
+                            char choice;
+
+                            // initialize an employee for displaying
+                            Employee employeeView = dao.getEmployeeById(id);
+                            displayOneEmployee(employeeView);
+
+                            // confirm deletion
+                            System.out.print("Are you sure you want to delete " + employeeView.getFirstName() + " " + employeeView.getLastName() + "? \ny/n:");
+                            choice = input.next().charAt(0);
+
+                            // Lock user here until they make a decision
+                            while (true) {
+                                if (choice == 'y') {
+                                    confirmDelete = true;
+                                    break;
+                                } else if (choice == 'n') {
+                                    id = -1;
+                                    break;
+                                } else {
+                                    System.out.print("\n* Invalid, enter 'y' for YES, 'n' for NO *\n y/n: ");
+                                }
+                                choice = input.next().charAt(0); // take input again
+                            }
+
+                        }
+                    } else {
+                        throw new InvalidIdException("Please enter a valid employee ID");
+                    }
+                }
+
+                if(confirmDelete) {
+                    System.out.println("Deleting Employee with ID: " + id);
+                    dao.deleteEmployee(id);
+                }
             }
 
-            //checks that ID entered is above 0 as ID cannot be 0 or anything less
-            if (id <= 0) {
-                System.out.println("The Employee ID you want to delete must be above 0");
-            } else {
-                System.out.println("Deleting Employee with ID: " + id);
-                //checks for employee ID in database and deletes it if it is there
-                dao.deleteEmployee(id);
-            }
 
-        }catch (DaoException ex){
+
+        } catch (DaoException ex){
             System.out.println("** Error deleting employee **" + ex.getMessage());
+        } catch(InvalidIdException e){
+            System.out.println(e.getMessage());
         }
     }
 
@@ -263,7 +231,7 @@ public class App {
             salary = getAnnualSalary();
             role = validateStringInput("\tRole: ");
 
-            // TODO hash password??, create better validation for these two in particular
+
             username = validateStringInput("\tUsername: ");
             password = validateStringInput("\tPassword: ");
 
@@ -413,6 +381,7 @@ public class App {
      */
     private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
         List<Employee> filteredEmployeeList = new ArrayList<>();
+        String filterMessage = "";
 
         // Ask for the type of filter to use
         System.out.println("+-----* Select Filter *-----+");
@@ -421,8 +390,11 @@ public class App {
             \t.2 By Date of Birth
             \t.3 By Salary
 
-            \t.0 Return""");
+            \t.-1 Return""");
         int filterChoice = validateIntInput(":");
+
+        if(filterChoice == -1) // exit
+            return;
 
         // validate input further to keep it within range 0 - 3
         while(filterChoice < 0 || filterChoice > 3 ) {
@@ -441,9 +413,6 @@ public class App {
             case 3:
                 filter = "salary";
                 break;
-            case 0:
-                // return to main menu
-                return;
             default:
                 System.out.println("----* Invalid option, select a corresponding number from the menu. *----");
         }
@@ -470,15 +439,135 @@ public class App {
         else
             order = false; // descending
 
+        // set filter message
+        switch(filter) {
+            case "fName":
+                if(order)
+                    filterMessage = "Retrieving employees based on first name ASC...";
+                else
+                    filterMessage = "Retrieving employees based on first name DESC...";
+                break;
+            case "dob":
+                if(order)
+                    filterMessage = "Retrieving employees based on date of birth ASC...";
+                else
+                    filterMessage = "Retrieving employees based on date of birth DESC...";
+                break;
+            case "salary":
+                if(order)
+                    filterMessage = "Retrieving employees based on salary ASC...";
+                else
+                    filterMessage = "Retrieving employees based on salary DESC...";
+                break;
+        }
+
         try{
             // pass filter name to apply the right filter before displaying
             filteredEmployeeList = dao.getEmployeesMatchingFilter(filter, order);
+            System.out.println("\n" + filterMessage);
             displayAllEmployees(filteredEmployeeList);
 
         } catch(DaoException e) {
             System.out.println("** Error connecting to database. **" + e.getMessage());
         }
     }
+    /**
+     *  Author: Luke Hilliard
+     *  Displays the main menu (Default)
+     */
+    private static void displayMainMenu() {
+        System.out.println("+-------------* Employee Database *-------------+");
+        System.out.println("""      
+                            |                                               |
+                            |           .1 Display all Employees            |
+                            |           .2 Display Employee                 |
+                            |           .3 Delete Employee                  |
+                            |           .4 Add an Employee                  |
+                            |           .5 Update Employee                  |
+                            |           .6 Filter Employees                 |
+                            |           .7 Employee to JSON                 |
+                            |                                               |
+                            |           .-1 Exit                            |
+                            +-----------------------------------------------+                                               
+                            """);
+    }
+
+    /**
+     * Author: Luke Hilliard
+     * Displays menu and takes input for options for JSON functions
+     *
+     * @param dao connection to database
+     */
+    private static void displayJsonOptions(EmployeeDaoInterface dao) {
+        int choice;
+        int key;
+        boolean exit = false;
+        String employeeJson = "";
+        JsonConverter converter = new JsonConverter();
+        while(!exit) {
+            System.out.println("""
+                    +--------------------* JSON *-------------------+
+                    |                                               |
+                    |       . 1 Display all Employees as JSON       |
+                    |       . 2 Display Employee as JSON by ID      |
+                    |                                               |
+                    |       .-1 Return                              |
+                    +-----------------------------------------------+
+                    """);
+
+            choice = validateIntInput(":");
+            if(choice == -1) {
+                return;
+            }
+
+            switch (choice) {
+                case 1:
+
+
+
+                    break;
+                case 2:
+                    // Display all employees as a table for user to select
+                    // Stay in loop until user wants to return to main menu
+                    while (true) {
+                        boolean selectedDisplayAll = false;
+
+                        // ask for ID of user
+                        System.out.print("----* Enter an employee ID (-1 to exit, -2 to display all) ");
+                        key = validateIntInput(": ");
+                        if(key == -1)
+                            break;
+
+                        if(key == -2)
+                            selectedDisplayAll = true;
+
+                        // if user hasnt selected display all, do conversion else skip conversion and display all
+                        if(!selectedDisplayAll) {
+                            // pass key to converter
+                            employeeJson = converter.employeeToJsonByKey(key);
+
+                            // if converter did not return null, display JSON and exit loop
+                            if (employeeJson != null) {
+                                System.out.println(employeeJson);
+                            }
+                        } else {
+                            try {
+                                System.out.println("Retrieving all employees...");
+                                displayAllEmployees(dao.getAllEmployees());
+                            } catch(DaoException e) {
+                                System.out.println(e.getMessage());
+                            }
+
+                        }
+
+                    }
+                    break;
+                default:
+                    System.out.print("---* Invalid input, select an option from the menu *---\n:");
+            }
+        }
+    }
+
 
     /**
      * Author: Luke Hilliard
