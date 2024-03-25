@@ -83,7 +83,7 @@ public class App {
     private static List<Employee> getAllEmployees(EmployeeDaoInterface dao) throws DaoException{
         List<Employee> employeeList = new ArrayList<>();
         try {
-            System.out.println("\nFinding all employees...");
+            System.out.println("\nRetrieving all employees...");
             employeeList = dao.getAllEmployees();
 
             if (employeeList.isEmpty())
@@ -144,45 +144,55 @@ public class App {
             while(true) {
                 int id;
                 boolean confirmDelete = false;
-                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return): ");
+                boolean selectedDisplayAll = false;
+                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return, -2 to display all): ");
 
                 if(id == -1) { // exit method
                     System.out.println("Cancelling...\n");
                     return;
                 }
+                if(id == -2) { // display all and skip over this input
+                    selectedDisplayAll = true;
+                    System.out.println("\nRetrieving all employees...");
+                    displayAllEmployees(dao.getAllEmployees());
 
-                //check that id is above 0
-                if (id > -1) {
-                    if(dao.getEmployeeById(id) != null) { // if id returns a result
-                        Scanner input = new Scanner(System.in);
-                        char choice;
+                }
 
 
-                        // initialize an employee for displaying
-                        Employee employeeView = dao.getEmployeeById(id);
-                        displayOneEmployee(employeeView);
+                // if user hasn't selected display all, their input is used here, else skip over this and ask for id again
+                if(!selectedDisplayAll) {
 
-                        // confirm deletion
-                        System.out.print("Are you sure you want to delete " + employeeView.getFirstName() + " " + employeeView.getLastName() + "? \ny/n:");
-                        choice = input.next().charAt(0);
+                    if (id > -1) {//check that id is above -1
+                        if (dao.getEmployeeById(id) != null) { // if id returns a result
+                            Scanner input = new Scanner(System.in);
+                            char choice;
 
-                        // Lock user here until they make a decision
-                        while(true) {
-                            if(choice == 'y') {
-                                confirmDelete = true;
-                                break;
-                            } else if(choice == 'n'){
-                                id = -1;
-                                break;
-                            } else {
-                                System.out.print("\n* Invalid, enter 'y' for YES, 'n' for NO *\n y/n: ");
+                            // initialize an employee for displaying
+                            Employee employeeView = dao.getEmployeeById(id);
+                            displayOneEmployee(employeeView);
+
+                            // confirm deletion
+                            System.out.print("Are you sure you want to delete " + employeeView.getFirstName() + " " + employeeView.getLastName() + "? \ny/n:");
+                            choice = input.next().charAt(0);
+
+                            // Lock user here until they make a decision
+                            while (true) {
+                                if (choice == 'y') {
+                                    confirmDelete = true;
+                                    break;
+                                } else if (choice == 'n') {
+                                    id = -1;
+                                    break;
+                                } else {
+                                    System.out.print("\n* Invalid, enter 'y' for YES, 'n' for NO *\n y/n: ");
+                                }
+                                choice = input.next().charAt(0); // take input again
                             }
-                            choice = input.next().charAt(0); // take input again
-                        }
 
+                        }
+                    } else {
+                        throw new InvalidIdException("Please enter a valid employee ID");
                     }
-                } else {
-                    throw new InvalidIdException("ID must be greater than 0");
                 }
 
                 if(confirmDelete) {
@@ -379,8 +389,11 @@ public class App {
             \t.2 By Date of Birth
             \t.3 By Salary
 
-            \t.0 Return""");
+            \t.-1 Return""");
         int filterChoice = validateIntInput(":");
+
+        if(filterChoice == -1) // exit
+            return;
 
         // validate input further to keep it within range 0 - 3
         while(filterChoice < 0 || filterChoice > 3 ) {
@@ -399,9 +412,6 @@ public class App {
             case 3:
                 filter = "salary";
                 break;
-            case 0:
-                // return to main menu
-                return;
             default:
                 System.out.println("----* Invalid option, select a corresponding number from the menu. *----");
         }
@@ -442,17 +452,20 @@ public class App {
      *  Displays the main menu (Default)
      */
     private static void displayMainMenu() {
-        System.out.println("+-----* Employee Database *-----+");
-        System.out.println("""
-                \t.1 Display all Entities
-                \t.2 Display Entity by ID
-                \t.3 Delete Entity by ID
-                \t.4 Add an Entity
-                \t.5 Update an existing Entity by ID
-                \t.6 Get list of entities matching a filter
-                \t.7 JSON
-
-                \t.-1 Exit""");
+        System.out.println("+-------------* Employee Database *-------------+");
+        System.out.println("""      
+                            |                                               |
+                            |           .1 Display all Employees            |
+                            |           .2 Display Employee                 |
+                            |           .3 Delete Employee                  |
+                            |           .4 Add an Employee                  |
+                            |           .5 Update Employee                  |
+                            |           .6 Filter Employees                 |
+                            |           .7 Employee to JSON                 |
+                            |                                               |
+                            |           .-1 Exit                            |
+                            +-----------------------------------------------+                                               
+                            """);
     }
 
     /**
