@@ -1,13 +1,27 @@
 package ClientServer;
 
+import DAOs.EmployeeDaoInterface;
+import DAOs.MySqlEmployeeDao;
+import DTOs.Employee;
+import Exceptions.DaoException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Scanner;
 
+
+/**
+ * Main author: Luke Hilliard
+ *
+ *
+ */
 public class Server {
     final int SERVER_PORT_NO = 8888;
 
@@ -71,15 +85,15 @@ class ClientHandler implements Runnable {
     PrintWriter socketWriter;
     Socket clientSocket;
     final int clientNum;
-    public ClientHandler(Socket clientSocket, int clientNumber){
+
+    public ClientHandler(Socket clientSocket, int clientNumber) {
         this.clientNum = clientNumber;
         this.clientSocket = clientSocket;
 
-        try{
+        try {
             this.socketWriter = new PrintWriter(clientSocket.getOutputStream(), true);
-                    this.socketReader = new BufferedReader(new InputStreamReader((clientSocket.getInputStream())));
-        }
-        catch (IOException ex){
+            this.socketReader = new BufferedReader(new InputStreamReader((clientSocket.getInputStream())));
+        } catch (IOException ex) {
             System.out.println("Client Handler (Server) IOException: " + ex);
         }
     }
@@ -87,41 +101,68 @@ class ClientHandler implements Runnable {
     @Override
     public void run() {
         String request;
-        try{
-            while ((request = socketReader.readLine()) != null){
-                System.out.println("Server: (Client Handler): Read command from client " + clientNum + "; " + request);
+        Scanner input = new Scanner(System.in);
+        EmployeeDaoInterface dao = new MySqlEmployeeDao();
+        try
+        {
+            while ((request = socketReader.readLine()) != null)
+            {
+                System.out.println("Server: (Client Handler): Read command from client " + clientNum + "-> " + request);
+                String[] parameters = request.split("&"); // split request with passed delimiter
+                String option = parameters[0];
 
-                if(request.startsWith("time")){
-                    LocalTime time = LocalTime.now();
-                    socketWriter.println(time);
-                    System.out.println("Server message: time sent to client.");
-                }
-                //if the command is "echo" with a message (for example "Hello")
-                // then it will print the message to the client ("Hello")
-                else if (request.startsWith("echo")){
-                    String message = request.substring(5);
-                    socketWriter.println(message);
-                    System.out.println("Server message: echo message sent to client");
-                }
-                //If the command is unknown, then it will not do anything
-                else {
-                    socketWriter.println("error, server does not understand request");
-                    System.out.println("Server message: invalid request from client");
+                // PROTOCOL
+                switch (option) {
+                    case "1": // Display all employees
+                        //System.out.println("Client requested to display all employees");
+                        /**
+                         * TODO - Haroldas add your code here
+                         *
+                         */
+                        break;
+                    case "2": // Find employee by ID
+                        //System.out.println("Client requested to find employees by ID");
+                        /**
+                         * TODO - Katie add your code here
+                         * you will have to use the parameters array, user parameters[1] to access the ID passed from client
+                         */
+                        break;
+                    case "3": // Add employee
+
+                        // Initialize object values
+                        String fName = parameters[1];
+                        String lName = parameters[2];
+                        String gender = parameters[3];
+                        LocalDate dateOfBirth = LocalDate.parse(parameters[4]);
+                        double salary = Double.parseDouble(parameters[5]);
+                        String role = parameters[6];
+                        String username = parameters[7];
+                        String password = parameters[8];
+
+                        try {
+                            // create employee object and add it to database
+                            dao.addEmployee(new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
+                        } catch (DaoException e) {
+                            System.out.println("** Error creating new employee. **" + e.getMessage());
+                        }
+                        break;
                 }
             }
-        }
-        catch (IOException ex){
+        }catch(IOException ex){
             System.out.println("Client Handler (Server) IOException: " + ex);
-        }
-        finally {
+        }finally{
             this.socketWriter.close();
-            try{
+            try {
                 this.socketReader.close();
                 this.clientSocket.close();
-            }
-            catch (IOException ex){
+            } catch (IOException ex) {
                 System.out.println("Client Handler (Server) IOException " + ex);
             }
         }
     }
+
+
 }
+
+
+
