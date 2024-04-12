@@ -5,9 +5,7 @@ import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
 import DTOs.JsonConverter;
 import Exceptions.DaoException;
-import Exceptions.EmployeeNotFoundException;
 import Exceptions.InvalidIdException;
-import com.google.gson.Gson;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +28,7 @@ public class App {
 
         try{
             do{
-                int choice = 0;
+                int choice;
                 EmployeeDaoInterface IEmployeeDao = new MySqlEmployeeDao();
                 displayMainMenu();
                 System.out.print(":");
@@ -43,7 +41,7 @@ public class App {
                         break;
                     case 1:
                         // call method1 to display all employees, pass a call to method2 as a parameter, method 2 returns a List of Employee objects
-                        displayAllEmployees(getAllEmployees(IEmployeeDao));;
+                        displayAllEmployees(getAllEmployees(IEmployeeDao));
                         break;
                     case 2:
                         findEmployeeByID(IEmployeeDao);
@@ -55,7 +53,7 @@ public class App {
                         addEmployee(IEmployeeDao);
                         break;
                     case 5:
-                        displayUpdateEmployeeByID(IEmployeeDao);
+                        updateEmployeeByID(IEmployeeDao);
                         break;
                     case 6:
                         findEmployeeMatchingFilter(IEmployeeDao);
@@ -145,24 +143,23 @@ public class App {
                 int id;
                 boolean confirmDelete = false;
                 boolean selectedDisplayAll = false;
-                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return, -2 to display all): ");
 
+                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return, -2 to display all): ");
                 if(id == -1) { // exit method
                     System.out.println("Cancelling...\n");
                     return;
                 }
-                if(id == -2) { // display all and skip over this input
+                if(id == -2) { // display all and skip over this iteration of the process
                     selectedDisplayAll = true;
                     System.out.println("\nRetrieving all employees...");
                     displayAllEmployees(dao.getAllEmployees());
-
                 }
 
 
                 // if user hasn't selected display all, their input is used here, else skip over this and ask for id again
                 if(!selectedDisplayAll) {
 
-                    if (id > -1) {//check that id is above -1
+                    if (id > -1) {
                         if (dao.getEmployeeById(id) != null) { // if id returns a result
                             Scanner input = new Scanner(System.in);
                             char choice;
@@ -201,8 +198,6 @@ public class App {
                 }
             }
 
-
-
         } catch (DaoException ex){
             System.out.println("** Error deleting employee **" + ex.getMessage());
         } catch(InvalidIdException e){
@@ -219,7 +214,7 @@ public class App {
      */
     private static void addEmployee(EmployeeDaoInterface dao) {
         try {
-            Scanner input = new Scanner(System.in);
+
             String fName, lName, gender, role, username, password;
             LocalDate dateOfBirth;
             double salary;
@@ -248,7 +243,7 @@ public class App {
      *  Author: Katie Lynch
      *  Displays the menu for updating an existing Employee
      */
-    private static void displayUpdateEmployeeByID(EmployeeDaoInterface dao){
+    private static void updateEmployeeByID(EmployeeDaoInterface dao){
         try {
             displayAllEmployees(dao.getAllEmployees());
         }catch(DaoException e){
@@ -380,7 +375,7 @@ public class App {
      * @param dao connection
      */
     private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
-        List<Employee> filteredEmployeeList = new ArrayList<>();
+        List<Employee> filteredEmployeeList;
         String filterMessage = "";
 
         // Ask for the type of filter to use
@@ -434,10 +429,8 @@ public class App {
 
         boolean order;
         // set order based on input
-        if(orderChoice == 1)
-            order = true; // ascending
-        else
-            order = false; // descending
+
+        order = orderChoice == 1;
 
         // set filter message
         switch(filter) {
@@ -477,7 +470,7 @@ public class App {
      */
     private static void displayMainMenu() {
         System.out.println("+-------------* Employee Database *-------------+");
-        System.out.println("""      
+        System.out.println("""
                             |                                               |
                             |           .1 Display all Employees            |
                             |           .2 Display Employee                 |
@@ -488,7 +481,7 @@ public class App {
                             |           .7 Employee to JSON                 |
                             |                                               |
                             |           .-1 Exit                            |
-                            +-----------------------------------------------+                                               
+                            +-----------------------------------------------+
                             """);
     }
 
@@ -501,10 +494,9 @@ public class App {
     private static void displayJsonOptions(EmployeeDaoInterface dao) {
         int choice;
         int key;
-        boolean exit = false;
-        String employeeJson = "";
+        String employeeJson;
         JsonConverter converter = new JsonConverter();
-        while(!exit) {
+        while(true) {
             System.out.println("""
                     +--------------------* JSON *-------------------+
                     |                                               |
@@ -541,7 +533,7 @@ public class App {
                         if(key == -2)
                             selectedDisplayAll = true;
 
-                        // if user hasnt selected display all, do conversion else skip conversion and display all
+                        // if user hasn't selected display all, do conversion else skip conversion and display all
                         if(!selectedDisplayAll) {
                             // pass key to converter
                             employeeJson = converter.employeeToJsonByKey(key);
@@ -622,7 +614,7 @@ public class App {
      */
     private static String validateStringInput(String requestMessage) {
         Scanner input = new Scanner(System.in);
-        String validStr = "";
+        String validStr;
         System.out.print(requestMessage);
         // set to always true so loop can only exit from break
         while(true) {
@@ -693,7 +685,7 @@ public class App {
 
     /**
      * Author: Luke Hilliard
-     * Use this method whenever you want to take an integer value. Tries to parse user input to a
+     * Use this method whenever you want to take an integer value. Tries to parse user input to an
      * Integer, catches invalid input and tries again.
      *
      * @param requestMessage e.g. "Enter ID: "
@@ -708,9 +700,7 @@ public class App {
                 System.out.print(requestMessage);
                 return Integer.parseInt(input.nextLine()); // if the input cannot be parsed to an integer, it is invalid
 
-            }catch(NumberFormatException e){
-                System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
-            } catch(InputMismatchException e) {
+            }catch(NumberFormatException | InputMismatchException e){
                 System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
             }
         }

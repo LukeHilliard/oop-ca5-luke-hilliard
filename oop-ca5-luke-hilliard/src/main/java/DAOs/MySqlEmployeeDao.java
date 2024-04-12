@@ -12,8 +12,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Scanner;
-
 
 
 /**
@@ -236,7 +234,7 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
      * @throws DaoException catch the exception
      */
     @Override
-    public Employee updateEmployee(int id, Employee updatedEmployee) throws DaoException{
+    public void updateEmployee(int id, Employee updatedEmployee) throws DaoException{
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -289,7 +287,6 @@ public class MySqlEmployeeDao extends MySqlDao implements EmployeeDaoInterface {
                 System.out.println(e.getMessage());
             }
         }
-        return employee;
     }
 
 
