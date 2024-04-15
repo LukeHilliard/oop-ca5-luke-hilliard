@@ -3,7 +3,7 @@ package ClientServer;
 import DAOs.EmployeeDaoInterface;
 import DAOs.MySqlEmployeeDao;
 import DTOs.Employee;
-import DTOs.JsonConverter;
+import Utilities.JsonConverter;
 import Exceptions.DaoException;
 
 import java.io.BufferedReader;
@@ -13,7 +13,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Scanner;
 

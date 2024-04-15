@@ -1,7 +1,8 @@
-package DTOs;
+package Utilities;
 
 import DAOs.EmployeeDaoInterface;
 import DAOs.MySqlEmployeeDao;
+import DTOs.Employee;
 import Exceptions.DaoException;
 import Exceptions.EmployeeNotFoundException;
 import Utilities.LocalDateAdapter;

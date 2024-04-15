@@ -1,4 +1,4 @@
-package DTOs;
+package Utilities;
 
 import DTOs.Employee;
 

@@ -1,9 +1,9 @@
 package DAOs;
 
-import DTOs.DobComparator;
+import Utilities.DobComparator;
 import DTOs.Employee;
-import DTOs.FirstnameComparator;
-import DTOs.SalaryComparator;
+import Utilities.FirstnameComparator;
+import Utilities.SalaryComparator;
 import Exceptions.DaoException;
 import Exceptions.EmployeeNotFoundException;
 

@@ -3,7 +3,7 @@ package Objects;
 import DAOs.MySqlEmployeeDao;
 import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
-import DTOs.JsonConverter;
+import Utilities.JsonConverter;
 import Exceptions.DaoException;
 import Exceptions.InvalidIdException;
 
