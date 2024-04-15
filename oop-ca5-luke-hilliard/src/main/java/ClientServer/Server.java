@@ -3,7 +3,6 @@ package ClientServer;
 import DAOs.EmployeeDaoInterface;
 import DAOs.MySqlEmployeeDao;
 import DTOs.Employee;
-import Utilities.JsonConverter;
 import Exceptions.DaoException;
 
 import java.io.BufferedReader;
@@ -13,6 +12,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Scanner;
 
@@ -35,7 +35,7 @@ public class Server {
         Socket clientSocket = null;
         try {
             serverSocket = new ServerSocket(SERVER_PORT_NO);
-            System.out.println("*** Employee Database Server ***");
+            System.out.println("Server Started");
             int clientNum = 0;
 
             while (true){
@@ -114,43 +114,19 @@ class ClientHandler implements Runnable {
                 // PROTOCOL
                 switch (option) {
                     case "1": // Display all employees
-                        System.out.println("Client requested to display all employees");
+                        //System.out.println("Client requested to display all employees");
                         /**
-                         *  Main author: Haroldas Tamosauskas
-                         * Other contributors: ...
+                         * TODO - Haroldas add your code here
                          *
                          */
-                        try {
-                            List<Employee> employees = dao.getAllEmployees();
-                            //Will go through the employees list, and will print each of the employees to the client
-                            for (Employee employee : employees) {
-                                socketWriter.println(employee.toString()); // Append each employee's details
-                            }
-
-                            // Sends an error to the client
-                        } catch (DaoException e) {
-                            System.out.println("** Error getting all employees. **" + e.getMessage());
-                        }
                         break;
                     case "2": // Find employee by ID
-                        System.out.println("*******HERE");
+                        //System.out.println("Client requested to find employees by ID");
                         /**
-                         * Main author: Katie Lynch
+                         * TODO - Katie add your code here
+                         * you will have to use the parameters array, user parameters[1] to access the ID passed from client
                          */
-                        System.out.println("Client Requested To Find Employee By ID");
-                        int id;
-                            id = Integer.parseInt(parameters[1]);
-                            //getting and displaying employee from database
-                            JsonConverter converter = new JsonConverter();
-                            String response = converter.employeeToJsonByKey(id);
-
-                            System.out.println("Employee found-" + response);
-                            socketWriter.println(response);
                         break;
-
-                    /**
-                     * Main author: Luke Hilliard
-                     */
                     case "3": // Add employee
 
                         // Initialize object values
@@ -166,12 +142,9 @@ class ClientHandler implements Runnable {
                         try {
                             // create employee object and add it to database
                             dao.addEmployee(new Employee(fName, lName, gender, dateOfBirth, salary, role, username, password));
-                        } catch (DaoException ex) {
-                            System.out.println("** Error creating new employee. **" + ex.getMessage());
+                        } catch (DaoException e) {
+                            System.out.println("** Error creating new employee. **" + e.getMessage());
                         }
-                        break;
-                    default:
-                        System.out.println("Invalid request");
                         break;
                 }
             }
