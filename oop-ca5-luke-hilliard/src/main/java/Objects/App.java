@@ -515,7 +515,22 @@ public class App {
             switch (choice) {
                 case 1:
 
-
+                    try {
+                        System.out.println("*---- Converting Employee List To Json String ----*");
+                        //calls the jsonConverter class created
+                        JsonConverter jsonConverter = new JsonConverter();
+                        //gets each row of information and converts them individually using the converter code
+                        employeeJson = jsonConverter.jsonEmployeeList();
+                        //checks to see if there is any information in the database to convert
+                        if(employeeJson != null){
+                            System.out.println(employeeJson);
+                        }else{
+                            //if there is no information a message is shown to alert the user that the database is empty
+                            System.out.println("No Employee Information Was Found");
+                        }
+                    } catch (DaoException ex) {
+                        System.out.println("Encountered An Error Converting Employee List To Json String" + ex.getMessage());
+                    }
 
                     break;
                 case 2:

@@ -8,6 +8,7 @@ import Utilities.LocalDateAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.time.LocalDate;
+import java.util.List;
 
 public class JsonConverter {
     public String employeeToJsonByKey(int key) {
@@ -41,5 +42,32 @@ public class JsonConverter {
             System.out.println("---* Error connecting to the database *---");
         }
         return employeeJson;
+    }
+
+    /**
+     * Author: Katie Lynch
+     * Other contributors: Luke Hilliard
+     * Gson Parser takes one employee and parses its information before it outputs as a Json String. Added .setPrettyPrinting to separate each Json String to the next line
+     */
+    public String jsonEmployeeList() throws DaoException{
+        //String stores the employee information for each employee in the database
+        String jsonEmployees = "";
+        try {
+            //connects to the database and stores all the employees there in a list
+            EmployeeDaoInterface IEmployeeDao = new MySqlEmployeeDao();
+            List<Employee> employee = IEmployeeDao.getAllEmployees();
+
+            //creating the gsonParser that will display the Json Strings in a readable format
+            Gson gsonParser = new GsonBuilder()
+                    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+                    .create();
+            //takes each individual employee, applies the parser to the employees information and stores all the new formatted employees
+            jsonEmployees = gsonParser.toJson(employee);
+
+        } catch(DaoException e) {
+            System.out.println("Encountered An Error Displaying All Employees As A Json String: " + e.getMessage());
+        }
+        return jsonEmployees;
+
     }
 }
