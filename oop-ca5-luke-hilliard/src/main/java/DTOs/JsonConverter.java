@@ -11,6 +11,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class JsonConverter {
+
+    /**
+     * Author: Luke Hilliard
+     * Other contributors: Luke Hilliard
+     * Gson Parser takes one employee and parses its information before it outputs as a Json String. Added .setPrettyPrinting to separate each Json String to the next line
+     */
     public String employeeToJsonByKey(int key) {
         String employeeJson = "";
 
@@ -26,7 +32,6 @@ public class JsonConverter {
 
             // using GsonBuilder to apply the LocalDateAdapter created in the Utilities package
             Gson gsonParser = new GsonBuilder()
-                    .setPrettyPrinting() // format json to have 'pretty' view
                     .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
                     .create();
 
@@ -47,7 +52,7 @@ public class JsonConverter {
     /**
      * Author: Katie Lynch
      * Other contributors: Luke Hilliard
-     * Gson Parser takes one employee and parses its information before it outputs as a Json String. Added .setPrettyPrinting to separate each Json String to the next line
+     *
      */
     public String jsonEmployeeList() throws DaoException{
         //String stores the employee information for each employee in the database
