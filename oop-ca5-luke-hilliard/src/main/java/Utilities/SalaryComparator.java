@@ -1,4 +1,6 @@
-package DTOs;
+package Utilities;
+
+import DTOs.Employee;
 
 import java.util.Comparator;
 

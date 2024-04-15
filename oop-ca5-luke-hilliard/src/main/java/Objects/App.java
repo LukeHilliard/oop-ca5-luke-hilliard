@@ -3,10 +3,11 @@ package Objects;
 import DAOs.MySqlEmployeeDao;
 import DAOs.EmployeeDaoInterface;
 import DTOs.Employee;
-import DTOs.JsonConverter;
+import Utilities.JsonConverter;
 import Exceptions.DaoException;
 import Exceptions.InvalidIdException;
 
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -31,9 +32,8 @@ public class App {
                 int choice;
                 EmployeeDaoInterface IEmployeeDao = new MySqlEmployeeDao();
                 displayMainMenu();
-                System.out.print(":");
 
-                choice = input.nextInt();
+                choice = validateIntInput(": ", "mainMenuOption");
                 switch (choice) {
                     case -1:
                         System.out.println("\n\nProgram ending...");
@@ -108,7 +108,7 @@ public class App {
         try {
             // stay in infinite loop until user wants to return back to main menu by entering -1
             while(true) {
-                id = validateIntInput("\nEnter an ID to find (-1 to return): ");
+                id = validateIntInput("\nEnter an ID to find (-1 to return): ", "id");
                 if(id == -1) {
                     System.out.println("\n");
                     break; // exit loop and return to main menu
@@ -144,7 +144,8 @@ public class App {
                 boolean confirmDelete = false;
                 boolean selectedDisplayAll = false;
 
-                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return, -2 to display all): ");
+                id = validateIntInput("\nEnter ID of Employee to be deleted (-1 to return, -2 to display all): ", "id", true);
+                //System.out.println("ID after validation: " + id);
                 if(id == -1) { // exit method
                     System.out.println("Cancelling...\n");
                     return;
@@ -213,20 +214,32 @@ public class App {
      * @param dao interface
      */
     private static void addEmployee(EmployeeDaoInterface dao) {
-        try {
 
+
+        try {
+            Scanner input = new Scanner(System.in);
             String fName, lName, gender, role, username, password;
             LocalDate dateOfBirth;
-            double salary;
+            double salary = 0.00;
             System.out.println("-------*   Add Employee   -------*");
             fName = validateStringInput("\tFirst Name: ");
             lName = validateStringInput("\tLast Name: ");
             gender = validateStringInput("\tGender: ");
             dateOfBirth = getDateOfBirth();
-            salary = getAnnualSalary();
+
+            // can only exit from valid salary input
+            boolean salaryIsValid = false;
+            while(!salaryIsValid) {
+                try{
+                    System.out.print("Annual Salary: €");
+                    salary = Double.parseDouble(input.nextLine()); // if the input cannot be parsed to an integer, it is invalid
+                    salaryIsValid = true; // if this point is reached the input value is of type Double
+                }catch(NumberFormatException | InputMismatchException e){
+                    System.out.println("\n** Invalid input. Please enter a valid monetary value. **\n");
+                }
+
+            }
             role = validateStringInput("\tRole: ");
-
-
             username = validateStringInput("\tUsername: ");
             password = validateStringInput("\tPassword: ");
 
@@ -316,7 +329,7 @@ public class App {
                         lName = employee.getLastName();
                         gender = employee.getGender();
                         dateOfBirth = employee.getDob();
-                        salary = getAnnualSalary();
+                        salary = employee.getSalary();
                         role = employee.getRole();
                         username = employee.getUsername();
                         password = employee.getPassword();
@@ -371,7 +384,6 @@ public class App {
      *            Date of Birth                   Descending
      *            Salary
      *
-     *
      * @param dao connection
      */
     private static void findEmployeeMatchingFilter(EmployeeDaoInterface dao) {
@@ -386,7 +398,7 @@ public class App {
             \t.3 By Salary
 
             \t.-1 Return""");
-        int filterChoice = validateIntInput(":");
+        int filterChoice = validateIntInput(":", "filterOptions");
 
         if(filterChoice == -1) // exit
             return;
@@ -394,7 +406,7 @@ public class App {
         // validate input further to keep it within range 0 - 3
         while(filterChoice < 0 || filterChoice > 3 ) {
             System.out.println("--* Input " + filterChoice + " is out of bounds *--");
-            filterChoice = validateIntInput(":");
+            filterChoice = validateIntInput(":", "filterOptions");
         }
         // based on user input from the menu options, set a variable to the type of filter they want
         String filter = "";
@@ -419,12 +431,12 @@ public class App {
                             \t.2 Descending
                 
                             """);
-        int orderChoice = validateIntInput(":");
+        int orderChoice = validateIntInput(":", "filterOrder");
 
         // validate input further to keep it within range 1 - 2
         while(orderChoice < 1 || orderChoice > 2 ) {
             System.out.println("--* Input " + orderChoice + " is out of bounds *--");
-            orderChoice = validateIntInput(":");
+            orderChoice = validateIntInput(":", "filterOrder");
         }
 
         boolean order;
@@ -507,7 +519,7 @@ public class App {
                     +-----------------------------------------------+
                     """);
 
-            choice = validateIntInput(":");
+            choice = validateIntInput(":", "jsonOptions");
             if(choice == -1) {
                 return;
             }
@@ -515,7 +527,22 @@ public class App {
             switch (choice) {
                 case 1:
 
-
+                    try {
+                        System.out.println("*---- Converting Employee List To Json String ----*");
+                        //calls the jsonConverter class created
+                        JsonConverter jsonConverter = new JsonConverter();
+                        //gets each row of information and converts them individually using the converter code
+                        employeeJson = jsonConverter.jsonEmployeeList();
+                        //checks to see if there is any information in the database to convert
+                        if(employeeJson != null){
+                            System.out.println(employeeJson);
+                        }else{
+                            //if there is no information a message is shown to alert the user that the database is empty
+                            System.out.println("No Employee Information Was Found");
+                        }
+                    } catch (DaoException ex) {
+                        System.out.println("Encountered An Error Converting Employee List To Json String" + ex.getMessage());
+                    }
 
                     break;
                 case 2:
@@ -526,7 +553,7 @@ public class App {
 
                         // ask for ID of user
                         System.out.print("----* Enter an employee ID (-1 to exit, -2 to display all) ");
-                        key = validateIntInput(": ");
+                        key = validateIntInput(": ", "id", true);
                         if(key == -1)
                             break;
 
@@ -633,6 +660,150 @@ public class App {
     }
 
     /**
+     * Author: Luke Hilliard
+     * Use this method whenever you want to take an integer value. Tries to parse user input to an
+     * Integer, catches invalid input and tries again.
+     *
+     * @param requestMessage e.g. "Enter ID: "
+     * @return validated Integer value
+     */
+    private static int validateIntInput(String requestMessage, String field){
+        Scanner input = new Scanner(System.in);
+        String dataString;
+        switch(field) {
+            case "id":
+                // true so loop can only exit from return
+                while(true) {
+                    try{
+                        System.out.print(requestMessage);
+                        dataString = input.nextLine();
+                        int id = Integer.parseInt(dataString); // if the input cannot be parsed to an integer, it is invalid
+                        if(id < -1)
+                            throw new InvalidIdException("ID is out of range");
+                        else
+                            return id;
+
+                    }catch(NumberFormatException | InputMismatchException e){
+                        System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
+                    } catch(InvalidIdException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            case "filterOptions":
+                // true so loop can only exit from return
+                while(true) {
+                    try{
+                        System.out.print(requestMessage);
+                        dataString = input.nextLine();
+                        int option = Integer.parseInt(dataString); // if the input cannot be parsed to an integer, it is invalid
+                        if(option == 1 || option == 2 || option == 3 || option == -1) {
+                            return option;
+                        } else {
+                            throw new InvalidIdException("Options value is out of range");
+                        }
+
+                    }catch(NumberFormatException | InputMismatchException e){
+                        System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
+                    } catch(InvalidIdException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            case "filterOrder":
+                // true so loop can only exit from return
+                while(true) {
+                    try{
+                        System.out.print(requestMessage);
+                        dataString = input.nextLine();
+                        int order = Integer.parseInt(dataString); // if the input cannot be parsed to an integer, it is invalid
+                        if(order < 1 || order > 2)
+                            throw new InvalidIdException("Order value is out of range");
+                        else
+                            return order;
+
+                    }catch(NumberFormatException | InputMismatchException e){
+                        System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
+                    } catch(InvalidIdException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+
+            case "jsonOptions":
+                // true so loop can only exit from return
+                while(true) {
+                    try{
+                        System.out.print(requestMessage);
+                        dataString = input.nextLine();
+                        int option = Integer.parseInt(dataString); // if the input cannot be parsed to an integer, it is invalid
+                        if(option == 1 || option == 2 || option == 3 || option == -1) {
+                            return option;
+                        } else {
+                            throw new InvalidIdException("Options value is out of range");
+                        }
+
+                    }catch(NumberFormatException | InputMismatchException e){
+                        System.out.println("\n** Invalid input. Please enter a valid option from the menu value. **\n");
+                    } catch(InvalidIdException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            case "mainMenuOption":
+                // true so loop can only exit from return
+                while(true) {
+                    try{
+                        System.out.print(requestMessage);
+                        dataString = input.nextLine();
+                        int option = Integer.parseInt(dataString); // if the input cannot be parsed to an integer, it is invalid
+                        if(option == 1 || option == 2 || option == 3 || option == 4 || option == 5 || option == 6 || option == 7 || option == -1) {
+                            return option;
+                        } else {
+                            throw new InvalidIdException("Options value is out of range");
+                        }
+
+                    }catch(NumberFormatException | InputMismatchException e){
+                        System.out.println("\n** Invalid input. Please enter a valid option from the menu value. **\n");
+                    } catch(InvalidIdException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+
+            default:
+                System.out.println("Invalid field passed to Integer validator. Requested message - " + requestMessage);
+        }
+        return 0;
+    }
+    /**
+     * Author: Luke Hilliard
+     * Overloaded method to check if the current input requires two inline options to be handled using -1 and -2
+     */
+    private static int validateIntInput(String requestMessage, String field, boolean twoInlineOptions){
+        Scanner input = new Scanner(System.in);
+        String dataString;
+        int id = 0;
+
+            if(field.equals("id")){
+                // true so loop can only exit from return
+                while (true) {
+                    try {
+                        System.out.print(requestMessage);
+                        dataString = input.nextLine();
+                         id = Integer.parseInt(dataString); // if the input cannot be parsed to an integer, it is invalid
+                        if (id < -2)
+                            throw new InvalidIdException("ID is out of range");
+                        else
+                            return id;
+                    } catch (NumberFormatException | InputMismatchException e) {
+                        System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
+                    } catch (InvalidIdException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            } else {
+                System.out.println("Invalid field passed to Integer validator. Requested message - " + requestMessage);
+            }
+        return id;
+    }
+
+    /**
      *  Author: Luke Hilliard
      *  Use this method whenever you want to get a date of birth.
      *  Tries to parse user input with date format 'yyyy-MM-dd' catches invalid format,
@@ -660,49 +831,5 @@ public class App {
         }
     }
 
-    /**
-     * Author: Luke Hilliard
-     * Use this method whenever you want to get the annual salary.
-     * Tries to parse user input to double, catches invalid input and tries again.
-     * This method could also be user to validate double inputs.
-     *
-     * @return validated annual salary.
-     */
-    private static double getAnnualSalary() {
-        Scanner input = new Scanner(System.in);
 
-        // true so loop can only exit from return
-        while(true) {
-            try {
-                System.out.print("\tAnnual Salary: ");
-                return Double.parseDouble(input.nextLine()); // if the input cannot be parsed to a double, it is invalid
-
-            } catch (NumberFormatException e) {
-                System.out.print("\n** Invalid input. Please enter a valid annual salary. **\n");
-            }
-        }
-    }
-
-    /**
-     * Author: Luke Hilliard
-     * Use this method whenever you want to take an integer value. Tries to parse user input to an
-     * Integer, catches invalid input and tries again.
-     *
-     * @param requestMessage e.g. "Enter ID: "
-     * @return validated Integer value
-     */
-    private static Integer validateIntInput(String requestMessage){
-        Scanner input = new Scanner(System.in);
-
-        // true so loop can only exit from return
-        while(true) {
-            try{
-                System.out.print(requestMessage);
-                return Integer.parseInt(input.nextLine()); // if the input cannot be parsed to an integer, it is invalid
-
-            }catch(NumberFormatException | InputMismatchException e){
-                System.out.println("\n** Invalid input. Please enter a valid integer value. **\n");
-            }
-        }
-    }
 }
