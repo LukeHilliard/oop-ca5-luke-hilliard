@@ -4,13 +4,20 @@ import DAOs.EmployeeDaoInterface;
 import DAOs.MySqlEmployeeDao;
 import DTOs.Employee;
 import Exceptions.DaoException;
-
+import Utilities.LocalDateAdapter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.Socket;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -37,17 +44,24 @@ public class Client {
             Scanner input = new Scanner(System.in);
             Scanner submenuInput = new Scanner(System.in);
             boolean exit = false;
+            boolean hasSelectedById, hasSelectedDisplayAll;
 
             do{
+                String jsonString = "";
+                hasSelectedById = false;
+                hasSelectedDisplayAll = false;
                 int option;
                 displayMainMenu();
                 System.out.print(":");
 
                 option = input.nextInt();
+                System.out.println(option);
                 String request = "0";
                 switch (option) {
                     case 1: // Display all employees;
                         request = Integer.toString(option);
+                        hasSelectedDisplayAll = true;
+
                         break;
                     case 2: // Find employee by ID
                         int id;
@@ -61,6 +75,21 @@ public class Client {
                                 System.out.println("\n");
                                 break; // exit loop and return to main menu
                             }
+                        System.out.print("\nEnter Character ID (-1 to exit): ");
+//                        while(!input.hasNextInt() || input.nextInt() < -1){
+//                            System.out.println("*--- Invalid ID Entered ---*");
+//                            input.next();
+//                        }
+                        id = input.nextInt();
+                        input.nextLine();
+                        if(id == -1){
+                            System.out.println("\n");
+                            exit = true;
+                            break;
+                        }
+                        request = option + "&" + id;
+                        System.out.println("Request: " + request);
+                        hasSelectedById = true;
 
                             request = option + "&" + id;
                         break;
@@ -105,6 +134,24 @@ public class Client {
                 }
                 if(!exit) {
                     out.println(request);
+
+                    if(hasSelectedDisplayAll) {
+                        Gson parser = new GsonBuilder()
+                                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+                                .create();
+                        jsonString = in.readLine();
+
+                        //System.out.println(jsonString);
+                        Type listType = new TypeToken<List<Employee>>(){}.getType(); // use TypeToken to force json entities to Employee objects
+                        List<Employee> employees = parser.fromJson(jsonString, listType);
+                        displayAllEmployees(employees);
+                        
+                    }
+                    if(hasSelectedById) {
+                        jsonString = in.readLine();
+
+                    }
+
                 }
             }while(!exit);
         } catch (IOException ex){
@@ -129,6 +176,43 @@ public class Client {
     }
 
 
+    /**
+     * Author: Luke Hilliard
+     * Takes a list of characters as a parameter and displays them
+     *
+     * @param employee database information of one character
+     */
+    private static void displayOneEmployee(Employee employee)  {
 
+        // Display a single employee in table form
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("| ID |  First Name  |  Last Name   | Gender |    DOB     |   Salary   |      Role               |    Username          | Password       |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
 
+        System.out.printf("| %-2d | %-12s | %-12s | %-6s | %10s | $% .2f | %-23s | %-20s | %-14s |%n",
+                employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+\n");
+
+    }
+
+    /**
+     * Author: Luke Hilliard
+     * Takes a List of employees as a parameter and displays all of them in table form
+     *
+     * @param employeeList a list of employees, populated with results from SQL DB
+     */
+    private static void displayAllEmployees(List<Employee> employeeList) {
+        // Display all employee in table form
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("| ID |  First Name  |  Last Name   | Gender |    DOB     |   Salary   |      Role               |    Username          | Password       |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+
+        for(Employee employee : employeeList) {
+            System.out.printf("| %-2d | %-12s | %-12s | %-6s | %10s | $% .2f | %-23s | %-20s | %-14s |%n",
+                    employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
+        }
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("|  Total: "+ employeeList.size() + "                                                                                                                            |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+\n");
+    }
 }

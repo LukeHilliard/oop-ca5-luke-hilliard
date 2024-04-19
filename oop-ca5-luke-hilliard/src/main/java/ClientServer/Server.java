@@ -3,6 +3,7 @@ package ClientServer;
 import DAOs.EmployeeDaoInterface;
 import DAOs.MySqlEmployeeDao;
 import DTOs.Employee;
+import DTOs.JsonConverter;
 import Exceptions.DaoException;
 
 import java.io.BufferedReader;
@@ -119,6 +120,16 @@ class ClientHandler implements Runnable {
                          * TODO - Haroldas add your code here
                          *
                          */
+                        try {
+                            JsonConverter converter = new JsonConverter();
+                            String jsonList = converter.jsonEmployeeList();
+                            System.out.println(jsonList);
+                            socketWriter.println(jsonList); // Append each employee's details
+                            // Sends an error to the client
+                        } catch (DaoException e) {
+                            System.out.println("** Error getting all employees. **" + e.getMessage());
+                        }
+
                         break;
                     case "2": // Find employee by ID
                         //System.out.println("Client requested to find employees by ID");
