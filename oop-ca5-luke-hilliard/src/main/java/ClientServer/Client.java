@@ -63,11 +63,12 @@ public class Client {
                     case 2: // Find employee by ID
                         int id;
                         System.out.print("\nEnter Character ID (-1 to exit): ");
-                        while(!input.hasNextInt() || input.nextInt() < -1){
+                        while(!input.hasNextInt() && input.nextInt() >= -1){
                             System.out.println("*--- Invalid ID Entered ---*");
                             input.next();
                         }
                         id = input.nextInt();
+                        input.nextLine();
                         if(id == -1){
                             System.out.println("\n");
                             break;
@@ -124,6 +125,7 @@ public class Client {
                 }
                 if(!exit) {
                     out.println(request);
+
                     if(hasSelectedDisplayAll) {
                         String jsonString = in.readLine();
                         Gson gson = new GsonBuilder()

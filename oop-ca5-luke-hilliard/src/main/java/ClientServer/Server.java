@@ -122,7 +122,6 @@ class ClientHandler implements Runnable {
                          *
                          */
                         try {
-                            List<Employee> employees = dao.getAllEmployees();
                             String response = converter.jsonEmployeeList();
                             socketWriter.println(response);
 
