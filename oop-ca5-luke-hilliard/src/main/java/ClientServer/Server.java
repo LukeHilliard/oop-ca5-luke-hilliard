@@ -6,10 +6,7 @@ import DTOs.Employee;
 import Utilities.JsonConverter;
 import Exceptions.DaoException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
@@ -24,6 +21,7 @@ import java.util.Scanner;
  */
 public class Server {
     final int SERVER_PORT_NO = 8888;
+
 
     public static void main(String[] args) {
         Server server = new Server();
@@ -81,9 +79,14 @@ public class Server {
 
 
 class ClientHandler implements Runnable {
+    final String[] IMAGE_FILES = {"images/david-lee.jpeg", "images/emily-brown.jpeg", "images/jane-smith.jpeg", "images/john-doe.jpg", "images/micheal-johnson.jpg"};
+
     BufferedReader socketReader;
     PrintWriter socketWriter;
     Socket clientSocket;
+    private static DataOutputStream dataOutputStream = null;
+    private static DataInputStream dataInputStream = null;
+
     final int clientNum;
 
     public ClientHandler(Socket clientSocket, int clientNumber) {
@@ -93,6 +96,7 @@ class ClientHandler implements Runnable {
         try {
             this.socketWriter = new PrintWriter(clientSocket.getOutputStream(), true);
             this.socketReader = new BufferedReader(new InputStreamReader((clientSocket.getInputStream())));
+
         } catch (IOException ex) {
             System.out.println("Client Handler (Server) IOException: " + ex);
         }
@@ -136,12 +140,12 @@ class ClientHandler implements Runnable {
                          */
                         System.out.println("Client Requested To Find Employee By ID");
                         int id;
-                            id = Integer.parseInt(parameters[1]);
-                            //getting and displaying employee from database
-                            String response = converter.employeeToJsonByKey(id);
+                        id = Integer.parseInt(parameters[1]);
+                        //getting and displaying employee from database
+                        String response = converter.employeeToJsonByKey(id);
 
-                            System.out.println("Employee found-" + response);
-                            socketWriter.println(response);
+                        System.out.println("Employee found-" + response);
+                        socketWriter.println(response);
                         break;
 
                     /**
@@ -168,7 +172,31 @@ class ClientHandler implements Runnable {
                         break;
                     case "4":
                         System.out.println("**** client has requested employee image file names ****\n");
-                        socketWriter.println("You requested to see the image files");
+                        StringBuilder fileNames = new StringBuilder();
+                        for(int i = 0; i < IMAGE_FILES.length; i++) { // build a string containing only the employee names and not any information about the image
+                            fileNames.append(i).append(". ").append(IMAGE_FILES[i], IMAGE_FILES[i].indexOf("/") + 1, IMAGE_FILES[i].indexOf("."));
+                            //System.out.println(IMAGE_FILES[i].substring(IMAGE_FILES[i].indexOf("/") + 1, IMAGE_FILES[i].indexOf(".")));
+                        }
+                        socketWriter.println(fileNames);
+                        socketWriter.println("END_OF_DATA");
+                        socketWriter.flush();
+                        break;
+                    case "SEND_IMAGE":
+                        System.out.println("sending image to client");
+                        int imageId = Integer.parseInt(parameters[1]);
+
+                        try {
+                            dataInputStream = new DataInputStream(clientSocket.getInputStream());
+                            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+                            sendFile(IMAGE_FILES[imageId]);
+                            dataInputStream.close();
+                            dataOutputStream.close();
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        System.out.println("Image sent");
+
+
                         break;
 
                     default:
@@ -178,7 +206,9 @@ class ClientHandler implements Runnable {
             }
         }catch(IOException ex){
             System.out.println("Client Handler (Server) IOException: " + ex);
-        }finally{
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally{
             this.socketWriter.close();
             try {
                 this.socketReader.close();
@@ -189,6 +219,30 @@ class ClientHandler implements Runnable {
         }
     }
 
+    private static void sendFile(String path)
+            throws Exception
+    {
+        int bytes = 0;
+        // Open the File at the specified location (path)
+        File file = new File(path);
+        FileInputStream fileInputStream = new FileInputStream(file);
+
+        // send the length (in bytes) of the file to the server
+        dataOutputStream.writeLong(file.length());
+
+        // Here we break file into chunks
+        byte[] buffer = new byte[4 * 1024]; // 4 kilobyte buffer
+
+        // read bytes from file into the buffer until buffer is full or we reached end of file
+        while ((bytes = fileInputStream.read(buffer))!= -1) {
+            // Send the buffer contents to Server Socket, along with the count of the number of bytes
+            dataOutputStream.write(buffer, 0, bytes);
+            dataOutputStream.flush();   // force the data into the stream
+        }
+        // close the file
+        fileInputStream.close();
+
+    }
 
 }
 
