@@ -131,7 +131,6 @@ class ClientHandler implements Runnable {
                         }
                         break;
                     case "2": // Find employee by ID
-                        System.out.println("*******HERE");
                         /**
                          * Main author: Katie Lynch
                          */
@@ -167,12 +166,15 @@ class ClientHandler implements Runnable {
                             System.out.println("** Error creating new employee. **" + ex.getMessage());
                         }
                         break;
+                    case "4":
+                        System.out.println("**** client has requested employee image file names ****\n");
+                        socketWriter.println("You requested to see the image files");
+                        break;
+
                     default:
                         System.out.println("Invalid request");
                         break;
                 }
-
-
             }
         }catch(IOException ex){
             System.out.println("Client Handler (Server) IOException: " + ex);

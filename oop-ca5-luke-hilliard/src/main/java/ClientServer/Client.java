@@ -108,6 +108,23 @@ public class Client {
 
                         request = option + "&" + fName + "&" + lName +"&" + gender + "&" + dateOfBirth + "&" + salary + "&" + role + "&" + username + "&" + password;
                         break;
+                    case 4:
+
+                        System.out.println("+---------------* Client Access *---------------+\nRequesting files...");
+                        out.println(option);
+                        while(true){ // stay here until the user wants to leave image server
+                            response = in.readLine();
+                            System.out.println(response);
+                            if(input.nextLine().equals("-1")) { // handle exit condition
+                                break;
+                            }
+
+                        }
+
+
+
+                        break;
+
                     case -1:
                         while(true) {
                             System.out.print("\nAre you sure you want to disconnect from the server?\ny/n\t:");
@@ -165,6 +182,8 @@ public class Client {
                             |             .1 Display all Employees          |
                             |             .2 Display Employee               |
                             |             .3 Add an Employee                |
+                            |             .4 Image Server                   |
+                            |                                               |
                             |                                               |
                             |           .-1 Exit                            |
                             +-----------------------------------------------+
