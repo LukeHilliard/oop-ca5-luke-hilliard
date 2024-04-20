@@ -7,13 +7,16 @@ import Exceptions.DaoException;
 import Utilities.LocalDateAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.Socket;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -40,12 +43,14 @@ public class Client {
             Scanner input = new Scanner(System.in);
             Scanner submenuInput = new Scanner(System.in);
             boolean exit = false;
-            boolean hasSelectedById = false;
+            boolean hasSelectedDisplayAll, hasSelectedById;
 
             do{
                 int option;
                 displayMainMenu();
                 System.out.print(":");
+                hasSelectedDisplayAll = false;
+                hasSelectedById = false;
 
                 option = input.nextInt();
                 String request = "0";
@@ -53,15 +58,17 @@ public class Client {
                 switch (option) {
                     case 1: // Display all employees;
                         request = Integer.toString(option);
+                        hasSelectedDisplayAll = true;
                         break;
                     case 2: // Find employee by ID
                         int id;
                         System.out.print("\nEnter Character ID (-1 to exit): ");
-                        while(!input.hasNextInt() || input.nextInt() < -1){
+                        while(!input.hasNextInt() && input.nextInt() >= -1){
                             System.out.println("*--- Invalid ID Entered ---*");
                             input.next();
                         }
                         id = input.nextInt();
+                        input.nextLine();
                         if(id == -1){
                             System.out.println("\n");
                             break;
@@ -101,6 +108,23 @@ public class Client {
 
                         request = option + "&" + fName + "&" + lName +"&" + gender + "&" + dateOfBirth + "&" + salary + "&" + role + "&" + username + "&" + password;
                         break;
+                    case 4:
+
+                        System.out.println("+---------------* Client Access *---------------+\nRequesting files...");
+                        out.println(option);
+                        while(true){ // stay here until the user wants to leave image server
+                            response = in.readLine();
+                            System.out.println(response);
+                            if(input.nextLine().equals("-1")) { // handle exit condition
+                                break;
+                            }
+
+                        }
+
+
+
+                        break;
+
                     case -1:
                         while(true) {
                             System.out.print("\nAre you sure you want to disconnect from the server?\ny/n\t:");
@@ -118,6 +142,16 @@ public class Client {
                 }
                 if(!exit) {
                     out.println(request);
+
+                    if(hasSelectedDisplayAll) {
+                        String jsonString = in.readLine();
+                        Gson gson = new GsonBuilder()
+                                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+                                .create();
+                        Type listType = new TypeToken<List<Employee>>(){}.getType(); // use TypeToken to for entities from json to Employee Objects
+                        List<Employee> employees = gson.fromJson(jsonString, listType);
+                        displayAllEmployees(employees);
+                    }
 
                     if(hasSelectedById) {
                         String jsonString = in.readLine();
@@ -148,6 +182,8 @@ public class Client {
                             |             .1 Display all Employees          |
                             |             .2 Display Employee               |
                             |             .3 Add an Employee                |
+                            |             .4 Image Server                   |
+                            |                                               |
                             |                                               |
                             |           .-1 Exit                            |
                             +-----------------------------------------------+
@@ -171,6 +207,28 @@ public class Client {
                 employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
         System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+\n");
 
+    }
+
+
+    /**
+     * Author: Luke Hilliard
+     * Takes a List of employees as a parameter and displays all of them in table form
+     *
+     * @param employeeList a list of employees, populated with results from SQL DB
+     */
+    private static void displayAllEmployees(List<Employee> employeeList) {
+        // Display all employee in table form
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("| ID |  First Name  |  Last Name   | Gender |    DOB     |   Salary   |      Role               |    Username          | Password       |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+
+        for(Employee employee : employeeList) {
+            System.out.printf("| %-2d | %-12s | %-12s | %-6s | %10s | $% .2f | %-23s | %-20s | %-14s |%n",
+                    employee.getId(), employee.getFirstName(), employee.getLastName(), employee.getGender(), employee.getDob(), employee.getSalary(), employee.getRole(), employee.getUsername(), employee.getPassword());
+        }
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+");
+        System.out.println("|  Total: "+ employeeList.size() + "                                                                                                                            |");
+        System.out.println("+----+--------------+--------------+--------+------------+------------+-------------------------+----------------------+----------------+\n");
     }
 
 

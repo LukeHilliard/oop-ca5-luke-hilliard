@@ -105,6 +105,7 @@ class ClientHandler implements Runnable {
         EmployeeDaoInterface dao = new MySqlEmployeeDao();
         try
         {
+            JsonConverter converter = new JsonConverter();
             while ((request = socketReader.readLine()) != null)
             {
                 System.out.println("Server: (Client Handler): Read command from client " + clientNum + "-> " + request);
@@ -117,15 +118,12 @@ class ClientHandler implements Runnable {
                         System.out.println("Client requested to display all employees");
                         /**
                          *  Main author: Haroldas Tamosauskas
-                         * Other contributors: ...
+                         * Other contributors: Luke Hilliard
                          *
                          */
                         try {
-                            List<Employee> employees = dao.getAllEmployees();
-                            //Will go through the employees list, and will print each of the employees to the client
-                            for (Employee employee : employees) {
-                                socketWriter.println(employee.toString()); // Append each employee's details
-                            }
+                            String response = converter.jsonEmployeeList();
+                            socketWriter.println(response);
 
                             // Sends an error to the client
                         } catch (DaoException e) {
@@ -133,7 +131,6 @@ class ClientHandler implements Runnable {
                         }
                         break;
                     case "2": // Find employee by ID
-                        System.out.println("*******HERE");
                         /**
                          * Main author: Katie Lynch
                          */
@@ -141,7 +138,6 @@ class ClientHandler implements Runnable {
                         int id;
                             id = Integer.parseInt(parameters[1]);
                             //getting and displaying employee from database
-                            JsonConverter converter = new JsonConverter();
                             String response = converter.employeeToJsonByKey(id);
 
                             System.out.println("Employee found-" + response);
@@ -170,6 +166,11 @@ class ClientHandler implements Runnable {
                             System.out.println("** Error creating new employee. **" + ex.getMessage());
                         }
                         break;
+                    case "4":
+                        System.out.println("**** client has requested employee image file names ****\n");
+                        socketWriter.println("You requested to see the image files");
+                        break;
+
                     default:
                         System.out.println("Invalid request");
                         break;
