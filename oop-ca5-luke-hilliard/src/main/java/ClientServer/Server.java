@@ -6,10 +6,7 @@ import DTOs.Employee;
 import Utilities.JsonConverter;
 import Exceptions.DaoException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
@@ -24,6 +21,7 @@ import java.util.Scanner;
  */
 public class Server {
     final int SERVER_PORT_NO = 8888;
+
 
     public static void main(String[] args) {
         Server server = new Server();
@@ -86,6 +84,9 @@ class ClientHandler implements Runnable {
     BufferedReader socketReader;
     PrintWriter socketWriter;
     Socket clientSocket;
+    private static DataOutputStream dataOutputStream = null;
+    private static DataInputStream dataInputStream = null;
+
     final int clientNum;
 
     public ClientHandler(Socket clientSocket, int clientNumber) {
@@ -182,6 +183,19 @@ class ClientHandler implements Runnable {
                         break;
                     case "SEND_IMAGE":
                         System.out.println("sending image to client");
+                        int imageId = Integer.parseInt(parameters[1]);
+
+                        try {
+                            dataInputStream = new DataInputStream(clientSocket.getInputStream());
+                            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+                            sendFile(IMAGE_FILES[imageId]);
+                            dataInputStream.close();
+                            dataOutputStream.close();
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        System.out.println("Image sent");
+
 
                         break;
 
@@ -192,7 +206,9 @@ class ClientHandler implements Runnable {
             }
         }catch(IOException ex){
             System.out.println("Client Handler (Server) IOException: " + ex);
-        }finally{
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally{
             this.socketWriter.close();
             try {
                 this.socketReader.close();
@@ -203,6 +219,30 @@ class ClientHandler implements Runnable {
         }
     }
 
+    private static void sendFile(String path)
+            throws Exception
+    {
+        int bytes = 0;
+        // Open the File at the specified location (path)
+        File file = new File(path);
+        FileInputStream fileInputStream = new FileInputStream(file);
+
+        // send the length (in bytes) of the file to the server
+        dataOutputStream.writeLong(file.length());
+
+        // Here we break file into chunks
+        byte[] buffer = new byte[4 * 1024]; // 4 kilobyte buffer
+
+        // read bytes from file into the buffer until buffer is full or we reached end of file
+        while ((bytes = fileInputStream.read(buffer))!= -1) {
+            // Send the buffer contents to Server Socket, along with the count of the number of bytes
+            dataOutputStream.write(buffer, 0, bytes);
+            dataOutputStream.flush();   // force the data into the stream
+        }
+        // close the file
+        fileInputStream.close();
+
+    }
 
 }
 
