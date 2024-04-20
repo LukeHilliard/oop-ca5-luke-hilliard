@@ -81,6 +81,8 @@ public class Server {
 
 
 class ClientHandler implements Runnable {
+    final String[] IMAGE_FILES = {"images/david-lee.jpeg", "images/emily-brown.jpeg", "images/jane-smith.jpeg", "images/john-doe.jpg", "images/micheal-johnson.jpg"};
+
     BufferedReader socketReader;
     PrintWriter socketWriter;
     Socket clientSocket;
@@ -93,6 +95,7 @@ class ClientHandler implements Runnable {
         try {
             this.socketWriter = new PrintWriter(clientSocket.getOutputStream(), true);
             this.socketReader = new BufferedReader(new InputStreamReader((clientSocket.getInputStream())));
+
         } catch (IOException ex) {
             System.out.println("Client Handler (Server) IOException: " + ex);
         }
@@ -136,12 +139,12 @@ class ClientHandler implements Runnable {
                          */
                         System.out.println("Client Requested To Find Employee By ID");
                         int id;
-                            id = Integer.parseInt(parameters[1]);
-                            //getting and displaying employee from database
-                            String response = converter.employeeToJsonByKey(id);
+                        id = Integer.parseInt(parameters[1]);
+                        //getting and displaying employee from database
+                        String response = converter.employeeToJsonByKey(id);
 
-                            System.out.println("Employee found-" + response);
-                            socketWriter.println(response);
+                        System.out.println("Employee found-" + response);
+                        socketWriter.println(response);
                         break;
 
                     /**
@@ -168,7 +171,18 @@ class ClientHandler implements Runnable {
                         break;
                     case "4":
                         System.out.println("**** client has requested employee image file names ****\n");
-                        socketWriter.println("You requested to see the image files");
+                        StringBuilder fileNames = new StringBuilder();
+                        for(int i = 0; i < IMAGE_FILES.length; i++) { // build a string containing only the employee names and not any information about the image
+                            fileNames.append(i).append(". ").append(IMAGE_FILES[i], IMAGE_FILES[i].indexOf("/") + 1, IMAGE_FILES[i].indexOf("."));
+                            //System.out.println(IMAGE_FILES[i].substring(IMAGE_FILES[i].indexOf("/") + 1, IMAGE_FILES[i].indexOf(".")));
+                        }
+                        socketWriter.println(fileNames);
+                        socketWriter.println("END_OF_DATA");
+                        socketWriter.flush();
+                        break;
+                    case "SEND_IMAGE":
+                        System.out.println("sending image to client");
+
                         break;
 
                     default:

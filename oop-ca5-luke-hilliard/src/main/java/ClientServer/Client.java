@@ -37,14 +37,14 @@ public class Client {
         try(
                 Socket socket = new Socket("localhost", SERVER_PORT_NO);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         ){
             System.out.println("Client: client has connected to server.");
             Scanner input = new Scanner(System.in);
             Scanner submenuInput = new Scanner(System.in);
             boolean exit = false;
             boolean hasSelectedDisplayAll, hasSelectedById;
-
+            //socket.setSoTimeout(50); debugging while loop not exiting when setting (response = in.readline) != null
             do{
                 int option;
                 displayMainMenu();
@@ -109,17 +109,22 @@ public class Client {
                         request = option + "&" + fName + "&" + lName +"&" + gender + "&" + dateOfBirth + "&" + salary + "&" + role + "&" + username + "&" + password;
                         break;
                     case 4:
-
-                        System.out.println("+---------------* Client Access *---------------+\nRequesting files...");
+                        int employeeChoice;
+                        System.out.println("+---------------* Client Access *---------------+\nRequesting files...\n");
                         out.println(option);
-                        while(true){ // stay here until the user wants to leave image server
-                            response = in.readLine();
-                            System.out.println(response);
-                            if(input.nextLine().equals("-1")) { // handle exit condition
-                                break;
-                            }
-
+                        while((response = in.readLine()) != null && !response.equals("END_OF_DATA")) { // display options, sending a termination message from the server, without it the program gets stuck at this loop indefinitely
+                                System.out.println(response);
                         }
+                        System.out.print("Select an employee: ");
+                        while(!input.hasNextInt()) {
+                            System.out.print("Invalid input, select a number relating to an employee\n: ");
+                            input.next();
+                        }
+                        employeeChoice = input.nextInt();
+                        out.println("SEND_IMAGE" + "&" + employeeChoice);
+                        //System.out.println(in.readLine());
+
+
 
 
 
